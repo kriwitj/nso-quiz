@@ -53,8 +53,8 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - '127.0.0.1:9000:9000'   # S3 API
-      - '127.0.0.1:9001:9001'   # Web console
+      - '127.0.0.1:9100:9000'   # S3 API  (host:9100 → container:9000)
+      - '127.0.0.1:9101:9001'   # Web console (host:9101 → container:9001)
     healthcheck:
       test: ['CMD', 'mc', 'ready', 'local']
       interval: 10s
