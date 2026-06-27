@@ -1,0 +1,39 @@
+# Node modules (will be installed fresh inside Docker)
+**/node_modules
+
+# Build outputs
+**/dist
+**/.next
+**/out
+**/.turbo
+
+# Development & IDE
+**/.git
+**/.gitignore
+**/.vscode
+**/.idea
+
+# Environment files (secrets must not leak into image)
+**/.env
+**/.env.local
+**/.env.production
+**/.env.*.local
+
+# Logs
+**/npm-debug.log*
+**/*.log
+
+# OS artifacts
+**/.DS_Store
+**/Thumbs.db
+
+# Test artifacts
+**/coverage
+**/__tests__
+**/*.spec.ts
+**/*.test.ts
+**/*.e2e-spec.ts
+
+# Docker files themselves (not needed inside the build)
+**/Dockerfile*
+**/docker-compose*

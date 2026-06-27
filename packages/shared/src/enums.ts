@@ -1,0 +1,30 @@
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  HOST = 'HOST',
+  PLAYER = 'PLAYER',
+}
+
+export enum QuestionType {
+  MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
+  TRUE_FALSE = 'TRUE_FALSE',
+  POLL = 'POLL',
+  OPEN_ENDED = 'OPEN_ENDED',
+  IMAGE_CHOICE = 'IMAGE_CHOICE',
+}
+
+export enum GameState {
+  WAITING = 'WAITING',
+  STARTING = 'STARTING',
+  ACTIVE = 'ACTIVE',
+  QUESTION_ACTIVE = 'QUESTION_ACTIVE',
+  QUESTION_ENDED = 'QUESTION_ENDED',
+  PAUSED = 'PAUSED',
+  ENDED = 'ENDED',
+}
+
+export enum SessionStatus {
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
