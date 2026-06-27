@@ -128,21 +128,21 @@ services:
       - proxy_net
     labels:
       - "traefik.enable=true"
-      # ── Router: /nso-quiz/api/* → API (priority 20, strip /nso-quiz prefix) ──
+      # บอก Traefik ว่าให้ใช้ proxy_net ในการเชื่อมต่อ (container อยู่ 2 networks)
+      - "traefik.docker.network=proxy_net"
+      # ── Router: /nso-quiz/api/* → API (auto-priority จากความยาว rule) ──────────
       - "traefik.http.routers.quiz-api.rule=Host(`province-stat.nso.go.th`) && PathPrefix(`${BASE_PATH:-/nso-quiz}/api`)"
-      - "traefik.http.routers.quiz-api.priority=20"
       - "traefik.http.routers.quiz-api.entrypoints=websecure"
       - "traefik.http.routers.quiz-api.tls=true"
       - "traefik.http.routers.quiz-api.service=quiz-api"
       - "traefik.http.routers.quiz-api.middlewares=quiz-strip-basepath"
-      # ── Router: /nso-quiz/socket.io (WebSocket, priority 25) ─────────────────
+      # ── Router: /nso-quiz/socket.io → API (WebSocket) ────────────────────────
       - "traefik.http.routers.quiz-ws.rule=Host(`province-stat.nso.go.th`) && PathPrefix(`${BASE_PATH:-/nso-quiz}/socket.io`)"
-      - "traefik.http.routers.quiz-ws.priority=25"
       - "traefik.http.routers.quiz-ws.entrypoints=websecure"
       - "traefik.http.routers.quiz-ws.tls=true"
       - "traefik.http.routers.quiz-ws.service=quiz-api"
       - "traefik.http.routers.quiz-ws.middlewares=quiz-strip-basepath"
-      # ── Shared StripPrefix middleware (removes /nso-quiz before forwarding) ───
+      # ── StripPrefix middleware (ลบ /nso-quiz ก่อนส่งต่อไป NestJS) ────────────
       - "traefik.http.middlewares.quiz-strip-basepath.stripprefix.prefixes=${BASE_PATH:-/nso-quiz}"
       # ── Service ──────────────────────────────────────────────────────────────
       - "traefik.http.services.quiz-api.loadbalancer.server.port=4000"
@@ -185,21 +185,18 @@ services:
       - proxy_net
     labels:
       - "traefik.enable=true"
-      # ── Router: /nso-quiz/api/auth/* → Web/NextAuth (highest priority = 30) ──
-      # NextAuth lives inside Next.js, not NestJS, so this rule wins over quiz-api
+      - "traefik.docker.network=proxy_net"
+      # Router: /nso-quiz/api/auth/* -> web (NextAuth is inside Next.js, not NestJS)
       - "traefik.http.routers.quiz-web-auth.rule=Host(`province-stat.nso.go.th`) && PathPrefix(`${BASE_PATH:-/nso-quiz}/api/auth`)"
-      - "traefik.http.routers.quiz-web-auth.priority=30"
       - "traefik.http.routers.quiz-web-auth.entrypoints=websecure"
       - "traefik.http.routers.quiz-web-auth.tls=true"
       - "traefik.http.routers.quiz-web-auth.service=quiz-web"
-      # ── Router: /nso-quiz/* → Web (lowest priority = 10, NO StripPrefix) ─────
-      # Next.js is built with basePath=/nso-quiz so it serves /nso-quiz/* natively
+      # Router: /nso-quiz/* -> web (Next.js built with basePath, no StripPrefix needed)
       - "traefik.http.routers.quiz-web.rule=Host(`province-stat.nso.go.th`) && PathPrefix(`${BASE_PATH:-/nso-quiz}`)"
-      - "traefik.http.routers.quiz-web.priority=10"
       - "traefik.http.routers.quiz-web.entrypoints=websecure"
       - "traefik.http.routers.quiz-web.tls=true"
       - "traefik.http.routers.quiz-web.service=quiz-web"
-      # ── Service ──────────────────────────────────────────────────────────────
+      # Service
       - "traefik.http.services.quiz-web.loadbalancer.server.port=3000"
 
 volumes:
