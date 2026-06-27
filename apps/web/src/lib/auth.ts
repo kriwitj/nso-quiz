@@ -48,6 +48,15 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Ensure all NextAuth redirects respect the basePath.
+      // NEXTAUTH_URL includes the basePath (e.g. https://host/nso-quiz),
+      // so we use it as the authoritative base instead of the bare origin.
+      const base = process.env.NEXTAUTH_URL ?? baseUrl;
+      if (url.startsWith('/')) return `${base}${url}`;
+      if (url.startsWith(base)) return url;
+      return base;
+    },
     async jwt({ token, user, account }) {
       if (user) {
         token.accessToken = (user as any).accessToken;

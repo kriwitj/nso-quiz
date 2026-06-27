@@ -47,7 +47,11 @@ export default function LoginPage() {
 
         <div className="glass-card rounded-2xl p-8">
           <button
-            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+            onClick={() =>
+              signIn('google', {
+                callbackUrl: `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/dashboard`,
+              })
+            }
             className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl glass hover:bg-white/10 transition-colors mb-6"
           >
             <Chrome className="w-5 h-5" />
