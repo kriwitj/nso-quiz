@@ -189,6 +189,7 @@ export default function LandingPage() {
                 height={480}
                 className="w-full h-auto object-contain drop-shadow-2xl"
                 priority
+                unoptimized
               />
 
               {/* Floating leaderboard */}
