@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Param,
   Body,
   UseGuards,
@@ -36,6 +37,12 @@ export class SessionsController {
     return this.sessionsService.findAll(user.id, page, limit);
   }
 
+  /** Must be before :id to avoid route conflict */
+  @Get('active-for-quiz')
+  findActiveByQuiz(@Query('quizId') quizId: string, @CurrentUser() user: User) {
+    return this.sessionsService.findActiveByQuiz(quizId, user.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() user: User) {
     return this.sessionsService.findOne(id, user.id);
@@ -44,6 +51,16 @@ export class SessionsController {
   @Post(':id/end')
   end(@Param('id') id: string, @CurrentUser() user: User) {
     return this.sessionsService.end(id, user.id);
+  }
+
+  @Patch(':id/cancel')
+  cancel(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.sessionsService.cancel(id, user.id);
+  }
+
+  @Patch(':id/abort')
+  abort(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.sessionsService.abort(id, user.id);
   }
 
   @Get(':id/results')

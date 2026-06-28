@@ -62,6 +62,9 @@ export const sessionApi = {
   get: (id: string) => api.get(`/sessions/${id}`),
   end: (id: string) => api.post(`/sessions/${id}/end`),
   results: (id: string) => api.get(`/sessions/${id}/results`),
+  activeForQuiz: (quizId: string) => api.get(`/sessions/active-for-quiz?quizId=${quizId}`),
+  cancel: (id: string) => api.patch(`/sessions/${id}/cancel`),
+  abort: (id: string) => api.patch(`/sessions/${id}/abort`),
 };
 
 // Analytics API

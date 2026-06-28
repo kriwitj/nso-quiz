@@ -26,6 +26,7 @@ enum SessionStatus {
   ACTIVE
   COMPLETED
   CANCELLED
+  ABORTED
 }
 
 model User {

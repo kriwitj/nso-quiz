@@ -83,7 +83,10 @@ export class QuizService {
 
     await this.prisma.$transaction([
       this.prisma.leaderboardEntry.deleteMany({ where: { sessionId: { in: sessionIds } } }),
-      this.prisma.playerAnswer.deleteMany({ where: { sessionId: { in: sessionIds } } }),
+      // PlayerAnswer links to PlayerSession (playerSessionId), not GameSession directly
+      this.prisma.playerAnswer.deleteMany({
+        where: { playerSession: { sessionId: { in: sessionIds } } },
+      }),
       this.prisma.playerSession.deleteMany({ where: { sessionId: { in: sessionIds } } }),
       this.prisma.gameSession.deleteMany({ where: { id: { in: sessionIds } } }),
       this.prisma.quiz.delete({ where: { id } }),

@@ -28,6 +28,19 @@ export class SessionsService {
     });
   }
 
+  /** Find active (PENDING or ACTIVE) session for a quiz owned by hostId */
+  async findActiveByQuiz(quizId: string, hostId: string) {
+    return this.prisma.gameSession.findFirst({
+      where: {
+        quizId,
+        hostId,
+        status: { in: [SessionStatus.PENDING, SessionStatus.ACTIVE] },
+      },
+      include: { _count: { select: { playerSessions: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findAll(hostId: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
     const [sessions, total] = await Promise.all([
@@ -68,6 +81,40 @@ export class SessionsService {
     if (!session) throw new NotFoundException('Session not found');
     if (hostId && session.hostId !== hostId) throw new ForbiddenException('Access denied');
     return session;
+  }
+
+  /** Cancel a PENDING (WAITING) session — keeps record, kicks players */
+  async cancel(id: string, hostId: string) {
+    const session = await this.prisma.gameSession.findUnique({ where: { id } });
+    if (!session) throw new NotFoundException('Session not found');
+    if (session.hostId !== hostId) throw new ForbiddenException('Access denied');
+    if (session.status !== SessionStatus.PENDING) {
+      throw new BadRequestException('Only WAITING sessions can be cancelled');
+    }
+
+    await this.redis.deleteRoom(session.roomCode).catch(() => null);
+
+    return this.prisma.gameSession.update({
+      where: { id },
+      data: { status: SessionStatus.CANCELLED, endedAt: new Date() },
+    });
+  }
+
+  /** Abort a RUNNING (ACTIVE) session mid-game — saves current results */
+  async abort(id: string, hostId: string) {
+    const session = await this.prisma.gameSession.findUnique({ where: { id } });
+    if (!session) throw new NotFoundException('Session not found');
+    if (session.hostId !== hostId) throw new ForbiddenException('Access denied');
+    if (session.status !== SessionStatus.ACTIVE) {
+      throw new BadRequestException('Only RUNNING sessions can be aborted');
+    }
+
+    await this.redis.deleteRoom(session.roomCode).catch(() => null);
+
+    return this.prisma.gameSession.update({
+      where: { id },
+      data: { status: SessionStatus.ABORTED, endedAt: new Date() },
+    });
   }
 
   async end(id: string, hostId: string) {
