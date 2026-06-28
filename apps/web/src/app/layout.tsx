@@ -1,35 +1,32 @@
 import type { Metadata } from 'next';
-import { Inter, Outfit } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
-
-const outfit = Outfit({
-  subsets: ['latin'],
-  variable: '--font-outfit',
-});
-
 export const metadata: Metadata = {
-  title: 'QuizLive — Real-Time Quiz Platform',
+  title: 'NSO Quiz — ระบบแบบทดสอบออนไลน์',
   description:
-    'Host and play live interactive quizzes. Create engaging multiplayer quiz sessions with real-time scoring and leaderboards.',
-  keywords: ['quiz', 'live quiz', 'multiplayer quiz', 'kahoot alternative', 'real-time quiz'],
-  authors: [{ name: 'QuizLive Team' }],
+    'ระบบสร้างและจัดการแบบทดสอบออนไลน์ของสำนักงานสถิติแห่งชาติ เรียนรู้ข้อมูลสถิติผ่านกิจกรรมที่น่าสนใจ',
+  keywords: ['NSO', 'quiz', 'สถิติ', 'แบบทดสอบ', 'สำนักงานสถิติแห่งชาติ'],
+  authors: [{ name: 'NSO Thailand' }],
   openGraph: {
-    title: 'QuizLive',
-    description: 'Real-time multiplayer quiz platform',
+    title: 'NSO Quiz',
+    description: 'ระบบแบบทดสอบออนไลน์ สำนักงานสถิติแห่งชาติ',
     type: 'website',
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${outfit.variable} font-sans antialiased`}>
+    <html lang="th" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

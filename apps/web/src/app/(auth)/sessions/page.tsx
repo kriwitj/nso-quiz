@@ -13,13 +13,8 @@ interface SessionItem {
   createdAt: string;
   startedAt?: string | null;
   endedAt?: string | null;
-  quiz: {
-    id: string;
-    title: string;
-  };
-  _count: {
-    playerSessions: number;
-  };
+  quiz: { id: string; title: string };
+  _count: { playerSessions: number };
 }
 
 interface SessionsResponse {
@@ -34,26 +29,26 @@ export default function SessionsPage() {
   });
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="max-w-5xl space-y-6 animate-slide-up">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold">Session History</h1>
+          <h1 className="text-2xl font-bold text-foreground">ประวัติเซสชัน</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Review live rooms you have started and reopen sessions that are still in progress.
+            ดูห้องที่เคยเปิดและกลับไปยังเซสชันที่ยังดำเนินอยู่
           </p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-right">
-          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Total sessions</p>
-          <p className="mt-1 text-2xl font-semibold">{data?.total ?? 0}</p>
+        <div className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card px-5 py-3 text-right">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">เซสชันทั้งหมด</p>
+          <p className="mt-1 text-2xl font-bold text-foreground">{data?.total ?? 0}</p>
         </div>
       </div>
 
       {isLoading ? (
         <div className="space-y-3">
-          {[...Array(4)].map((_, index) => (
-            <div key={index} className="glass-card rounded-2xl p-6 animate-pulse">
-              <div className="h-5 w-56 rounded bg-white/10" />
-              <div className="mt-3 h-4 w-72 rounded bg-white/5" />
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-nso-outline-variant/30 p-6 animate-pulse">
+              <div className="h-5 w-56 rounded bg-nso-surface-container mb-3" />
+              <div className="h-4 w-72 rounded bg-nso-surface-low" />
             </div>
           ))}
         </div>
@@ -61,42 +56,47 @@ export default function SessionsPage() {
         <div className="space-y-3">
           {data.items.map((session) => {
             const canResume = session.status === 'PENDING' || session.status === 'ACTIVE';
-
             return (
               <div
                 key={session.id}
-                className="glass-card rounded-2xl p-5 md:flex md:items-center md:justify-between"
+                className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card p-5 md:flex md:items-center md:justify-between hover:shadow-card-hover transition-shadow"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="truncate font-semibold">{session.quiz.title}</h2>
+                    <h2 className="truncate font-semibold text-foreground">{session.quiz.title}</h2>
                     <StatusBadge status={session.status} />
-                    <span className="font-mono text-sm text-violet-300">{session.roomCode}</span>
+                    <span className="font-mono text-sm text-nso-primary bg-nso-primary-fixed/30 px-2 py-0.5 rounded">
+                      {session.roomCode}
+                    </span>
                   </div>
 
-                  <div className="mt-3 flex flex-wrap gap-3 text-sm text-muted-foreground">
+                  <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
                       <Users className="h-4 w-4" />
-                      {session._count.playerSessions} players
+                      {session._count.playerSessions} ผู้เล่น
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <Clock3 className="h-4 w-4" />
-                      Created {timeAgo(session.createdAt)}
+                      สร้าง {timeAgo(session.createdAt)}
                     </span>
                     {session.startedAt && (
-                      <span>Started {timeAgo(session.startedAt)}</span>
+                      <span>เริ่ม {timeAgo(session.startedAt)}</span>
                     )}
-                    {session.endedAt && <span>Ended {timeAgo(session.endedAt)}</span>}
+                    {session.endedAt && <span>จบ {timeAgo(session.endedAt)}</span>}
                   </div>
                 </div>
 
                 <div className="mt-4 flex gap-3 md:mt-0 md:pl-6">
                   <Link
                     href={`/sessions/${session.id}/host`}
-                    className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white"
+                    className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-colors ${
+                      canResume
+                        ? 'bg-nso-primary hover:bg-nso-primary-container'
+                        : 'bg-nso-secondary hover:bg-nso-secondary-container'
+                    }`}
                   >
                     {canResume ? <Play className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
-                    {canResume ? 'Open host view' : 'View summary'}
+                    {canResume ? 'เปิด Host' : 'ดูสรุป'}
                   </Link>
                 </div>
               </div>
@@ -104,17 +104,19 @@ export default function SessionsPage() {
           })}
         </div>
       ) : (
-        <div className="glass-card rounded-2xl p-12 text-center">
-          <Trophy className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-          <h2 className="font-display text-2xl font-bold">No sessions yet</h2>
+        <div className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card p-12 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-nso-secondary/10 flex items-center justify-center mx-auto mb-4">
+            <Trophy className="h-7 w-7 text-nso-secondary" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground">ยังไม่มีเซสชัน</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Start a quiz from the dashboard or quizzes page to create your first live room.
+            เริ่มควิซจากหน้า Dashboard หรือ ควิซของฉัน เพื่อเปิดห้องแรก
           </p>
           <Link
             href="/quizzes"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-white"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-nso-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-nso-primary-container transition-colors"
           >
-            Browse quizzes
+            ดูควิซ
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -125,15 +127,21 @@ export default function SessionsPage() {
 
 function StatusBadge({ status }: { status: SessionItem['status'] }) {
   const styles: Record<SessionItem['status'], string> = {
-    PENDING: 'bg-amber-500/15 text-amber-300 ring-amber-400/30',
-    ACTIVE: 'bg-emerald-500/15 text-emerald-300 ring-emerald-400/30',
-    COMPLETED: 'bg-slate-500/15 text-slate-200 ring-slate-400/30',
-    CANCELLED: 'bg-rose-500/15 text-rose-300 ring-rose-400/30',
+    PENDING: 'bg-amber-50 text-amber-700 ring-amber-200',
+    ACTIVE: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+    COMPLETED: 'bg-nso-surface-container text-muted-foreground ring-nso-outline-variant/50',
+    CANCELLED: 'bg-red-50 text-red-700 ring-red-200',
+  };
+  const labels: Record<SessionItem['status'], string> = {
+    PENDING: 'รอเริ่ม',
+    ACTIVE: 'กำลังดำเนินอยู่',
+    COMPLETED: 'เสร็จสิ้น',
+    CANCELLED: 'ยกเลิก',
   };
 
   return (
-    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${styles[status]}`}>
-      {status.toLowerCase()}
+    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${styles[status]}`}>
+      {labels[status]}
     </span>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 import { signOut } from 'next-auth/react';
-import { LogOut, Bell } from 'lucide-react';
+import { LogOut, Bell, Settings } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -15,46 +15,54 @@ interface Props {
 
 export function DashboardHeader({ user }: Props) {
   return (
-    <header className="glass border-b border-white/10 px-6 py-4 flex items-center justify-between flex-shrink-0">
+    <header className="bg-white border-b border-nso-outline-variant/40 px-6 py-3 flex items-center justify-between flex-shrink-0">
       <div />
-      <div className="flex items-center gap-4">
-        {/* Notification bell */}
+
+      <div className="flex items-center gap-2">
         <button
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-nso-surface-low transition-colors"
           aria-label="Notifications"
         >
           <Bell className="w-5 h-5" />
         </button>
 
+        <button
+          className="w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-nso-surface-low transition-colors"
+          aria-label="Settings"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
+
+        <div className="w-px h-5 bg-nso-outline-variant/50 mx-1" />
+
         {/* User info */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-sm font-semibold overflow-hidden flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="text-right hidden md:block">
+            <p className="text-sm font-semibold text-foreground leading-tight">{user.name}</p>
+            <p className="text-xs text-muted-foreground capitalize leading-tight">{user.role.toLowerCase()}</p>
+          </div>
+          <div className="w-9 h-9 rounded-full bg-nso-primary flex items-center justify-center text-sm font-bold overflow-hidden flex-shrink-0 border-2 border-nso-primary-fixed">
             {user.image ? (
               <Image
                 src={user.image}
                 alt={user.name}
-                width={32}
-                height={32}
+                width={36}
+                height={36}
                 className="w-full h-full rounded-full object-cover"
               />
             ) : (
               <span className="text-white text-xs font-bold">{getInitials(user.name)}</span>
             )}
           </div>
-          <div className="text-sm hidden md:block">
-            <p className="font-medium leading-tight">{user.name}</p>
-            <p className="text-muted-foreground text-xs capitalize">{user.role.toLowerCase()}</p>
-          </div>
         </div>
 
-        {/* Sign out */}
         <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
-          className="text-muted-foreground hover:text-foreground transition-colors"
-          title="Sign out"
-          aria-label="Sign out"
+          onClick={() => signOut({ callbackUrl: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/login` })}
+          className="w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+          title="ออกจากระบบ"
+          aria-label="ออกจากระบบ"
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut className="w-4 h-4" />
         </button>
       </div>
     </header>

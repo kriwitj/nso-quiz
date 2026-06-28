@@ -21,15 +21,24 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider basePath={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/api/auth`}>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme="light">
           {children}
           <Toaster
             position="top-right"
             toastOptions={{
               style: {
-                background: 'hsl(240 10% 10%)',
-                color: 'hsl(0 0% 98%)',
-                border: '1px solid hsl(240 3.7% 20%)',
+                background: '#ffffff',
+                color: '#191c1e',
+                border: '1px solid #c3c6d6',
+                boxShadow: '0 10px 25px -5px rgba(0, 70, 173, 0.1)',
+                fontFamily: '"Be Vietnam Pro", sans-serif',
+                fontSize: '14px',
+              },
+              success: {
+                iconTheme: { primary: '#00574e', secondary: '#ffffff' },
+              },
+              error: {
+                iconTheme: { primary: '#ba1a1a', secondary: '#ffffff' },
               },
             }}
           />

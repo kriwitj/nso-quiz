@@ -1,7 +1,7 @@
 'use client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { analyticsApi, quizApi, sessionApi } from '@/lib/api';
-import { BookOpen, Play, Users, TrendingUp, Plus, ArrowRight, Trophy } from 'lucide-react';
+import { BookOpen, Play, Users, Zap, Plus, ArrowRight, History } from 'lucide-react';
 import Link from 'next/link';
 import { timeAgo } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -15,10 +15,7 @@ interface QuizItem {
   id: string;
   title: string;
   updatedAt: string;
-  _count?: {
-    questions?: number;
-    sessions?: number;
-  };
+  _count?: { questions?: number; sessions?: number };
 }
 
 interface QuizzesData {
@@ -48,61 +45,95 @@ export function DashboardClient({ userName }: DashboardClientProps) {
   const startSession = useMutation({
     mutationFn: (quizId: string) => sessionApi.create(quizId),
     onSuccess: (res) => router.push(`/sessions/${res.data.id}/host`),
-    onError: () => toast.error('Failed to start session'),
+    onError: () => toast.error('ไม่สามารถเริ่มเซสชันได้'),
   });
+
+  const firstName = userName?.split(' ')[0] ?? 'ผู้ใช้';
 
   const stats = [
     {
-      label: 'Total Quizzes',
+      label: 'ควิซทั้งหมด',
       value: overview?.totalQuizzes ?? 0,
       icon: BookOpen,
-      color: 'from-violet-500 to-purple-600',
+      bg: 'bg-nso-primary-fixed/30',
+      iconColor: 'text-nso-primary',
+      badge: '+12%',
+      badgeColor: 'text-nso-tertiary bg-nso-tertiary/10',
     },
     {
-      label: 'Sessions Run',
+      label: 'เซสชันที่รันอยู่',
       value: overview?.totalSessions ?? 0,
       icon: Play,
-      color: 'from-pink-500 to-rose-600',
+      bg: 'bg-purple-100',
+      iconColor: 'text-nso-secondary',
+      badge: '+5%',
+      badgeColor: 'text-nso-secondary bg-nso-secondary/10',
     },
     {
-      label: 'Total Players',
+      label: 'ผู้เล่นทั้งหมด',
       value: overview?.totalPlayers ?? 0,
       icon: Users,
-      color: 'from-cyan-500 to-blue-600',
+      bg: 'bg-teal-50',
+      iconColor: 'text-nso-tertiary',
+      badge: 'สะสม',
+      badgeColor: 'text-nso-primary bg-nso-primary/10',
     },
     {
-      label: 'Active Now',
+      label: 'กำลังออนไลน์',
       value: 0,
-      icon: TrendingUp,
-      color: 'from-green-500 to-emerald-600',
+      icon: Zap,
+      bg: 'bg-nso-primary',
+      iconColor: 'text-white',
+      dark: true,
+      badge: 'Live',
+      badgeColor: 'text-green-400',
     },
   ];
 
-  const firstName = userName?.split(' ')[0] ?? 'there';
-
   return (
-    <div className="space-y-8 max-w-7xl">
+    <div className="space-y-8 max-w-7xl animate-slide-up">
       {/* Greeting */}
       <div>
-        <h1 className="font-display text-3xl font-bold">
-          Welcome back, <span className="gradient-text">{firstName}</span> 👋
+        <h1 className="text-2xl font-bold text-foreground">
+          ยินดีต้อนรับกลับ, <span className="text-nso-primary">{firstName}</span>
         </h1>
-        <p className="text-muted-foreground mt-1">
-          Ready to quiz? Here is your activity at a glance.
+        <p className="text-muted-foreground mt-1 text-sm">
+          นี่คือภาพรวมของระบบควิซ NSO สำหรับวันนี้
         </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <div key={s.label} className="glass-card rounded-2xl p-5">
-            <div
-              className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mb-3`}
-            >
-              <s.icon className="w-5 h-5 text-white" />
+          <div
+            key={s.label}
+            className={`rounded-xl p-6 border transition-all hover:-translate-y-0.5 ${
+              s.dark
+                ? 'bg-nso-primary border-nso-primary-container shadow-primary relative overflow-hidden'
+                : 'bg-white border-nso-outline-variant/30 shadow-card'
+            }`}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div className={`p-3 rounded-lg ${s.bg}`}>
+                <s.icon className={`w-5 h-5 ${s.iconColor}`} />
+              </div>
+              {s.dark ? (
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                  <span className="text-xs text-white/80">Live</span>
+                </span>
+              ) : (
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded ${s.badgeColor}`}>
+                  {s.badge}
+                </span>
+              )}
             </div>
-            <p className="font-display text-3xl font-bold">{s.value.toLocaleString()}</p>
-            <p className="text-muted-foreground text-sm mt-1">{s.label}</p>
+            <p className={`text-xs font-medium mb-1 ${s.dark ? 'text-white/70' : 'text-muted-foreground'}`}>
+              {s.label}
+            </p>
+            <p className={`text-2xl font-bold ${s.dark ? 'text-white' : 'text-foreground'}`}>
+              {s.value.toLocaleString()}
+            </p>
           </div>
         ))}
       </div>
@@ -111,95 +142,93 @@ export function DashboardClient({ userName }: DashboardClientProps) {
       <div className="grid md:grid-cols-2 gap-4">
         <Link
           href="/quizzes/new"
-          className="glass-card rounded-2xl p-6 flex items-center gap-4 hover:bg-white/5 transition-all group"
+          className="bg-nso-primary-container text-white rounded-2xl p-7 flex items-center gap-5 hover:opacity-95 transition-all group relative overflow-hidden shadow-primary"
         >
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="absolute inset-0 bg-gradient-to-br from-nso-primary to-nso-primary-container opacity-90" />
+          <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform relative z-10">
             <Plus className="w-6 h-6 text-white" />
           </div>
-          <div className="flex-1">
-            <p className="font-semibold">Create New Quiz</p>
-            <p className="text-muted-foreground text-sm">
-              Build a quiz with multiple question types
-            </p>
+          <div className="flex-1 relative z-10">
+            <p className="font-bold text-base">สร้างควิซใหม่</p>
+            <p className="text-white/80 text-sm mt-0.5">สร้างแบบทดสอบจากข้อมูลสถิติของคุณ</p>
           </div>
-          <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+          <ArrowRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform relative z-10" />
         </Link>
 
         <Link
           href="/sessions"
-          className="glass-card rounded-2xl p-6 flex items-center gap-4 hover:bg-white/5 transition-all group"
+          className="bg-white border border-nso-outline-variant/40 rounded-2xl p-7 flex items-center gap-5 hover:shadow-card-hover transition-all group shadow-card"
         >
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Trophy className="w-6 h-6 text-white" />
+          <div className="w-12 h-12 rounded-xl bg-nso-secondary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <History className="w-6 h-6 text-nso-secondary" />
           </div>
           <div className="flex-1">
-            <p className="font-semibold">Session History</p>
-            <p className="text-muted-foreground text-sm">
-              Review past game results and analytics
-            </p>
+            <p className="font-bold text-base text-foreground">ประวัติเซสชัน</p>
+            <p className="text-muted-foreground text-sm mt-0.5">ดูผลคะแนนและสถิติย้อนหลัง</p>
           </div>
-          <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+          <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-nso-primary group-hover:translate-x-1 transition-all" />
         </Link>
       </div>
 
       {/* Recent Quizzes */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-xl font-semibold">Recent Quizzes</h2>
+          <h2 className="text-lg font-bold text-foreground">ควิซล่าสุด</h2>
           <Link
             href="/quizzes"
-            className="text-sm text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors"
+            className="text-sm text-nso-primary hover:underline flex items-center gap-1 font-medium transition-colors"
           >
-            View all <ArrowRight className="w-4 h-4" />
+            ดูทั้งหมด <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        <div className="space-y-3">
-          {quizzes?.items?.slice(0, 5).map((quiz) => (
+        <div className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card overflow-hidden">
+          {quizzes?.items?.slice(0, 5).map((quiz, i) => (
             <div
               key={quiz.id}
-              className="glass-card rounded-xl p-4 flex items-center gap-4"
+              className={`flex items-center gap-4 px-5 py-4 hover:bg-nso-surface-low transition-colors ${
+                i !== 0 ? 'border-t border-nso-outline-variant/20' : ''
+              }`}
             >
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-600/20 border border-violet-500/20 flex items-center justify-center flex-shrink-0">
-                <BookOpen className="w-5 h-5 text-violet-400" />
+              <div className="w-10 h-10 rounded-lg bg-nso-primary-fixed/30 border border-nso-primary-fixed flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-5 h-5 text-nso-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{quiz.title}</p>
-                <p className="text-muted-foreground text-sm">
-                  {quiz._count?.questions ?? 0} questions ·{' '}
-                  {timeAgo(quiz.updatedAt)}
+                <p className="font-semibold text-sm text-foreground truncate">{quiz.title}</p>
+                <p className="text-muted-foreground text-xs mt-0.5">
+                  {quiz._count?.questions ?? 0} คำถาม · {timeAgo(quiz.updatedAt)}
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <Link
                   href={`/quizzes/${quiz.id}/edit`}
-                  className="px-3 py-1.5 rounded-lg glass text-sm hover:bg-white/10 transition-colors"
+                  className="px-3 py-1.5 rounded-lg border border-nso-primary text-nso-primary text-xs font-semibold hover:bg-nso-primary-fixed/20 transition-colors"
                 >
-                  Edit
+                  แก้ไข
                 </Link>
                 <button
                   onClick={() => startSession.mutate(quiz.id)}
                   disabled={startSession.isPending}
-                  className="px-3 py-1.5 rounded-lg bg-violet-600/20 text-violet-400 border border-violet-500/30 text-sm hover:bg-violet-600/30 disabled:opacity-50 transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-nso-primary text-white text-xs font-semibold hover:bg-nso-primary-container disabled:opacity-50 transition-colors flex items-center gap-1"
                 >
-                  Host
+                  <Play className="w-3 h-3" /> Host
                 </button>
               </div>
             </div>
           ))}
 
           {!quizzes?.items?.length && (
-            <div className="glass-card rounded-xl p-8 text-center">
-              <BookOpen className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="font-medium">No quizzes yet</p>
-              <p className="text-muted-foreground text-sm mb-4">
-                Create your first quiz to get started
-              </p>
+            <div className="p-10 text-center">
+              <div className="w-12 h-12 rounded-xl bg-nso-primary-fixed/30 flex items-center justify-center mx-auto mb-3">
+                <BookOpen className="w-6 h-6 text-nso-primary" />
+              </div>
+              <p className="font-semibold text-foreground">ยังไม่มีควิซ</p>
+              <p className="text-muted-foreground text-sm mb-4">สร้างควิซแรกของคุณเพื่อเริ่มต้น</p>
               <Link
                 href="/quizzes/new"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600/20 text-violet-400 border border-violet-500/30 text-sm hover:bg-violet-600/30 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-nso-primary text-white text-sm font-semibold hover:bg-nso-primary-container transition-colors"
               >
-                <Plus className="w-4 h-4" /> Create Quiz
+                <Plus className="w-4 h-4" /> สร้างควิซ
               </Link>
             </div>
           )}

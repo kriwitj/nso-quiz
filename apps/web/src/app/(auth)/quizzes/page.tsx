@@ -12,10 +12,7 @@ interface QuizItem {
   id: string;
   title: string;
   updatedAt: string;
-  _count?: {
-    questions?: number;
-    sessions?: number;
-  };
+  _count?: { questions?: number; sessions?: number };
 }
 
 interface QuizzesData {
@@ -37,24 +34,24 @@ export default function QuizzesPage() {
     mutationFn: (id: string) => quizApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quizzes'] });
-      toast.success('Quiz deleted');
+      toast.success('ลบควิซแล้ว');
     },
-    onError: () => toast.error('Failed to delete quiz'),
+    onError: () => toast.error('ไม่สามารถลบควิซได้'),
   });
 
   const duplicateMutation = useMutation({
     mutationFn: (id: string) => quizApi.duplicate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quizzes'] });
-      toast.success('Quiz duplicated');
+      toast.success('ทำสำเนาควิซแล้ว');
     },
-    onError: () => toast.error('Failed to duplicate quiz'),
+    onError: () => toast.error('ไม่สามารถทำสำเนาได้'),
   });
 
   const startSessionMutation = useMutation({
     mutationFn: (quizId: string) => sessionApi.create(quizId),
     onSuccess: (res) => router.push(`/sessions/${res.data.id}/host`),
-    onError: () => toast.error('Failed to start session'),
+    onError: () => toast.error('ไม่สามารถเริ่มเซสชันได้'),
   });
 
   const filteredQuizzes = data?.items?.filter((q) =>
@@ -62,32 +59,32 @@ export default function QuizzesPage() {
   );
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="max-w-5xl space-y-6 animate-slide-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold">My Quizzes</h1>
+          <h1 className="text-2xl font-bold text-foreground">ควิซของฉัน</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {data?.total ?? 0} quiz{data?.total !== 1 ? 'zes' : ''} total
+            ทั้งหมด {data?.total ?? 0} ควิซ
           </p>
         </div>
         <Link
           href="/quizzes/new"
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-nso-primary text-white text-sm font-semibold hover:bg-nso-primary-container transition-colors shadow-primary"
         >
-          <Plus className="w-4 h-4" /> New Quiz
+          <Plus className="w-4 h-4" /> สร้างควิซใหม่
         </Link>
       </div>
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         <input
           type="text"
-          placeholder="Search quizzes..."
+          placeholder="ค้นหาควิซ..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 outline-none transition-colors placeholder:text-muted-foreground"
+          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-nso-outline-variant/50 focus:border-nso-primary focus:ring-2 focus:ring-nso-primary/20 outline-none transition-all text-foreground placeholder:text-muted-foreground/60"
         />
       </div>
 
@@ -95,9 +92,9 @@ export default function QuizzesPage() {
       {isLoading ? (
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="glass-card rounded-xl p-6 animate-pulse">
-              <div className="h-5 bg-white/10 rounded w-1/3 mb-3" />
-              <div className="h-4 bg-white/5 rounded w-1/2" />
+            <div key={i} className="bg-white rounded-xl border border-nso-outline-variant/30 p-6 animate-pulse">
+              <div className="h-5 bg-nso-surface-container rounded w-1/3 mb-3" />
+              <div className="h-4 bg-nso-surface-low rounded w-1/2" />
             </div>
           ))}
         </div>
@@ -106,89 +103,85 @@ export default function QuizzesPage() {
           {filteredQuizzes?.map((quiz) => (
             <div
               key={quiz.id}
-              className="glass-card rounded-xl p-5 flex items-center gap-4 group"
+              className="bg-white rounded-xl border border-nso-outline-variant/30 shadow-card p-5 flex items-center gap-4 group hover:shadow-card-hover transition-shadow"
             >
-              {/* Icon */}
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-600/20 border border-violet-500/20 flex items-center justify-center flex-shrink-0">
-                <BookOpen className="w-6 h-6 text-violet-400" />
+              <div className="w-12 h-12 rounded-xl bg-nso-primary-fixed/30 border border-nso-primary-fixed flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-6 h-6 text-nso-primary" />
               </div>
 
-              {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="font-semibold truncate">{quiz.title}</p>
-                <p className="text-muted-foreground text-sm">
-                  {quiz._count?.questions ?? 0} questions ·{' '}
-                  {quiz._count?.sessions ?? 0} sessions ·{' '}
+                <p className="font-semibold text-foreground truncate">{quiz.title}</p>
+                <p className="text-muted-foreground text-sm mt-0.5">
+                  {quiz._count?.questions ?? 0} คำถาม ·{' '}
+                  {quiz._count?.sessions ?? 0} เซสชัน ·{' '}
                   {timeAgo(quiz.updatedAt)}
                 </p>
               </div>
 
-              {/* Action buttons — visible on hover */}
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Link
                   href={`/analytics?quizId=${quiz.id}`}
-                  className="p-2 rounded-lg glass hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
-                  title="Analytics"
+                  className="p-2 rounded-lg text-muted-foreground hover:text-nso-primary hover:bg-nso-primary-fixed/20 transition-colors"
+                  title="วิเคราะห์"
                 >
                   <BarChart3 className="w-4 h-4" />
                 </Link>
                 <button
                   onClick={() => duplicateMutation.mutate(quiz.id)}
                   disabled={duplicateMutation.isPending}
-                  className="p-2 rounded-lg glass hover:bg-white/10 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors"
-                  title="Duplicate"
+                  className="p-2 rounded-lg text-muted-foreground hover:text-nso-primary hover:bg-nso-primary-fixed/20 disabled:opacity-50 transition-colors"
+                  title="ทำสำเนา"
                 >
                   <Copy className="w-4 h-4" />
                 </button>
                 <Link
                   href={`/quizzes/${quiz.id}/edit`}
-                  className="p-2 rounded-lg glass hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
-                  title="Edit"
+                  className="p-2 rounded-lg text-muted-foreground hover:text-nso-primary hover:bg-nso-primary-fixed/20 transition-colors"
+                  title="แก้ไข"
                 >
                   <Edit3 className="w-4 h-4" />
                 </Link>
                 <button
                   onClick={() => {
-                    if (confirm(`Delete "${quiz.title}"? This cannot be undone.`)) {
+                    if (confirm(`ลบ "${quiz.title}"? ไม่สามารถย้อนกลับได้`)) {
                       deleteMutation.mutate(quiz.id);
                     }
                   }}
                   disabled={deleteMutation.isPending}
-                  className="p-2 rounded-lg glass hover:bg-rose-500/20 text-muted-foreground hover:text-rose-400 disabled:opacity-50 transition-colors"
-                  title="Delete"
+                  className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
+                  title="ลบ"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Host button */}
-              <Link
-                href={`/quizzes/${quiz.id}`}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600/20 text-violet-400 border border-violet-500/30 text-sm hover:bg-violet-600/30 flex-shrink-0 transition-colors"
+              <button
+                onClick={() => startSessionMutation.mutate(quiz.id)}
+                disabled={startSessionMutation.isPending}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-nso-primary text-white text-sm font-semibold hover:bg-nso-primary-container disabled:opacity-50 flex-shrink-0 transition-colors"
               >
                 <Play className="w-4 h-4" /> Host
-              </Link>
+              </button>
             </div>
           ))}
 
-          {/* Empty state */}
           {!filteredQuizzes?.length && !isLoading && (
-            <div className="glass-card rounded-xl p-12 text-center">
-              <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="font-semibold text-lg">
-                {search ? 'No quizzes match your search' : 'No quizzes yet'}
+            <div className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card p-12 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-nso-primary-fixed/30 flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="w-7 h-7 text-nso-primary" />
+              </div>
+              <p className="font-bold text-lg text-foreground">
+                {search ? 'ไม่พบควิซที่ค้นหา' : 'ยังไม่มีควิซ'}
               </p>
-              <p className="text-muted-foreground text-sm mt-1 mb-4">
-                {search
-                  ? 'Try a different search term'
-                  : 'Create your first quiz to get started'}
+              <p className="text-muted-foreground text-sm mt-1 mb-5">
+                {search ? 'ลองค้นหาด้วยคำอื่น' : 'สร้างควิซแรกของคุณเพื่อเริ่มต้น'}
               </p>
               {!search && (
                 <Link
                   href="/quizzes/new"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-nso-primary text-white text-sm font-semibold hover:bg-nso-primary-container transition-colors"
                 >
-                  <Plus className="w-4 h-4" /> Create Quiz
+                  <Plus className="w-4 h-4" /> สร้างควิซ
                 </Link>
               )}
             </div>

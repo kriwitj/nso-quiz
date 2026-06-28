@@ -2,14 +2,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Zap,
   LayoutDashboard,
   BookOpen,
   Play,
   BarChart3,
   Settings,
-  Users,
+  ShieldCheck,
   ChevronLeft,
+  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -17,10 +17,10 @@ import { useSession } from 'next-auth/react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/quizzes', label: 'My Quizzes', icon: BookOpen },
-  { href: '/sessions', label: 'Sessions', icon: Play },
-  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/profile', label: 'Profile', icon: Settings },
+  { href: '/quizzes', label: 'ควิซของฉัน', icon: BookOpen },
+  { href: '/sessions', label: 'เซสชัน', icon: Play },
+  { href: '/analytics', label: 'วิเคราะห์', icon: BarChart3 },
+  { href: '/profile', label: 'โปรไฟล์', icon: Settings },
 ];
 
 export function DashboardSidebar() {
@@ -32,22 +32,25 @@ export function DashboardSidebar() {
   return (
     <aside
       className={cn(
-        'h-screen glass border-r border-white/10 flex flex-col transition-all duration-300',
+        'h-screen bg-white border-r border-nso-outline-variant/40 flex flex-col transition-all duration-300 flex-shrink-0',
         collapsed ? 'w-16' : 'w-64',
       )}
     >
       {/* Logo */}
-      <div className="p-4 flex items-center gap-3 border-b border-white/10">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-          <Zap className="w-5 h-5 text-white" />
+      <div className="p-4 flex items-center gap-3 border-b border-nso-outline-variant/30">
+        <div className="w-9 h-9 rounded-xl bg-nso-primary flex items-center justify-center flex-shrink-0">
+          <BarChart3 className="w-5 h-5 text-white" />
         </div>
         {!collapsed && (
-          <span className="font-display font-bold text-lg gradient-text">QuizLive</span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-bold text-nso-primary text-base leading-tight">NSO Quiz</span>
+            <span className="text-[10px] text-nso-outline uppercase tracking-wider">Data Insights</span>
+          </div>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
           className={cn(
-            'ml-auto text-muted-foreground hover:text-foreground transition-colors',
+            'ml-auto p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0',
             collapsed && 'mx-auto',
           )}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -69,14 +72,14 @@ export function DashboardSidebar() {
               href={item.href}
               title={collapsed ? item.label : undefined}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150',
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm font-medium',
                 active
-                  ? 'bg-violet-600/20 text-violet-400 border border-violet-500/30'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-white/5',
+                  ? 'bg-nso-primary text-white shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-nso-surface-low',
               )}
             >
               <item.icon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
+              {!collapsed && <span>{item.label}</span>}
             </Link>
           );
         })}
@@ -86,32 +89,32 @@ export function DashboardSidebar() {
             href="/admin"
             title={collapsed ? 'Admin Panel' : undefined}
             className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150',
+              'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm font-medium',
               pathname.startsWith('/admin')
-                ? 'bg-rose-600/20 text-rose-400 border border-rose-500/30'
-                : 'text-muted-foreground hover:text-foreground hover:bg-white/5',
+                ? 'bg-destructive text-white'
+                : 'text-muted-foreground hover:text-foreground hover:bg-nso-surface-low',
             )}
           >
-            <Users className="w-5 h-5 flex-shrink-0" />
-            {!collapsed && <span className="text-sm font-medium">Admin Panel</span>}
+            <ShieldCheck className="w-5 h-5 flex-shrink-0" />
+            {!collapsed && <span>Admin Panel</span>}
           </Link>
         )}
       </nav>
 
-      {/* Bottom user badge (collapsed state shows nothing extra) */}
-      {!collapsed && session?.user && (
-        <div className="p-3 border-t border-white/10">
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg glass">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">
-              {session.user.name?.charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-medium truncate">{session.user.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{session.user.role}</p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Create button */}
+      <div className={cn('p-3 border-t border-nso-outline-variant/30', collapsed && 'px-2')}>
+        <Link
+          href="/quizzes/new"
+          title={collapsed ? 'สร้างควิซใหม่' : undefined}
+          className={cn(
+            'flex items-center justify-center gap-2 py-3 rounded-xl bg-nso-primary text-white text-sm font-semibold hover:bg-nso-primary-container transition-all active:scale-95 shadow-primary',
+            collapsed ? 'w-full px-0' : 'px-4',
+          )}
+        >
+          <Plus className="w-4 h-4 flex-shrink-0" />
+          {!collapsed && <span>สร้างควิซใหม่</span>}
+        </Link>
+      </div>
     </aside>
   );
 }

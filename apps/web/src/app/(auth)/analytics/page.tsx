@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
@@ -49,85 +49,101 @@ export default function AnalyticsPage() {
   });
 
   const stats = [
-    { label: 'Quizzes', value: overview?.totalQuizzes ?? 0, icon: BookOpen },
-    { label: 'Sessions', value: overview?.totalSessions ?? 0, icon: Trophy },
-    { label: 'Players', value: overview?.totalPlayers ?? 0, icon: Users },
+    { label: 'ควิซทั้งหมด', value: overview?.totalQuizzes ?? 0, icon: BookOpen, iconBg: 'bg-nso-primary-fixed/30', iconColor: 'text-nso-primary' },
+    { label: 'เซสชันทั้งหมด', value: overview?.totalSessions ?? 0, icon: Trophy, iconBg: 'bg-purple-100', iconColor: 'text-nso-secondary' },
+    { label: 'ผู้เล่นทั้งหมด', value: overview?.totalPlayers ?? 0, icon: Users, iconBg: 'bg-teal-50', iconColor: 'text-nso-tertiary' },
     {
-      label: 'Avg score',
-      value: quizAnalytics ? quizAnalytics.averageScore.toLocaleString() : '-',
+      label: 'คะแนนเฉลี่ย',
+      value: quizAnalytics ? quizAnalytics.averageScore.toLocaleString() : '—',
       icon: Clock3,
+      iconBg: 'bg-amber-50',
+      iconColor: 'text-amber-600',
     },
   ];
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="max-w-6xl space-y-6 animate-slide-up">
       <div>
-        <h1 className="font-display text-3xl font-bold">Analytics</h1>
+        <h1 className="text-2xl font-bold text-foreground">วิเคราะห์</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {quizId
-            ? 'Quiz-level performance for the selected quiz.'
-            : 'Overview of quiz activity across your sessions.'}
+            ? 'ผลการทดสอบของควิซที่เลือก'
+            : 'ภาพรวมกิจกรรมควิซทั้งหมดในระบบ'}
         </p>
       </div>
 
+      {/* Stats grid */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="glass-card rounded-2xl p-5">
-            <stat.icon className="h-5 w-5 text-violet-300" />
-            <p className="mt-3 text-sm text-muted-foreground">{stat.label}</p>
-            <p className="mt-1 text-3xl font-semibold">{stat.value}</p>
+          <div key={stat.label} className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card p-5">
+            <div className={`w-10 h-10 rounded-xl ${stat.iconBg} flex items-center justify-center`}>
+              <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">{stat.label}</p>
+            <p className="mt-1 text-3xl font-bold text-foreground">{stat.value}</p>
           </div>
         ))}
       </div>
 
       {quizAnalytics ? (
-        <div className="glass-card rounded-3xl p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-2xl font-semibold">Question Breakdown</h2>
+        <div className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card p-6">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-foreground">รายละเอียดรายคำถาม</h2>
             <span className="text-sm text-muted-foreground">
-              {quizAnalytics.totalSessions} sessions • {quizAnalytics.totalParticipants} participants
+              {quizAnalytics.totalSessions} เซสชัน · {quizAnalytics.totalParticipants} ผู้เข้าร่วม
             </span>
           </div>
           <div className="space-y-3">
-            {quizAnalytics.questionStats.map((question, index) => (
-              <div key={question.questionId} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                      Question {index + 1}
-                    </p>
-                    <p className="mt-1 font-medium">{question.questionText}</p>
+            {quizAnalytics.questionStats.map((question, index) => {
+              const pct = Math.round(question.correctRate * 100);
+              return (
+                <div key={question.questionId} className="rounded-xl border border-nso-outline-variant/30 bg-nso-surface p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                        คำถาม {index + 1}
+                      </p>
+                      <p className="font-medium text-foreground">{question.questionText}</p>
+                    </div>
+                    <div className="text-right text-sm text-muted-foreground flex-shrink-0">
+                      <p className="font-semibold text-foreground">{pct}% ถูกต้อง</p>
+                      <p>{(question.averageResponseTimeMs / 1000).toFixed(1)}s เฉลี่ย</p>
+                    </div>
                   </div>
-                  <div className="text-right text-sm text-muted-foreground">
-                    <p>{Math.round(question.correctRate * 100)}% correct</p>
-                    <p>{(question.averageResponseTimeMs / 1000).toFixed(1)}s average</p>
+                  <div className="h-1.5 rounded-full bg-nso-surface-container overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${pct >= 70 ? 'bg-nso-tertiary' : pct >= 40 ? 'bg-amber-500' : 'bg-destructive'}`}
+                      style={{ width: `${pct}%` }}
+                    />
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ) : (
-        <div className="glass-card rounded-3xl p-6">
-          <h2 className="font-display text-2xl font-semibold">Recent Sessions</h2>
-          <div className="mt-4 space-y-3">
+        <div className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card p-6">
+          <h2 className="text-lg font-bold text-foreground mb-5">เซสชันล่าสุด</h2>
+          <div className="space-y-3">
             {overview?.recentSessions?.length ? (
               overview.recentSessions.map((session) => (
-                <div key={session.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div key={session.id} className="rounded-xl border border-nso-outline-variant/30 bg-nso-surface p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="font-medium">{session.quiz.title}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">Room {session.roomCode}</p>
+                      <p className="font-semibold text-foreground">{session.quiz.title}</p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        รหัสห้อง: <span className="font-mono text-nso-primary">{session.roomCode}</span>
+                      </p>
                     </div>
                     <div className="text-right text-sm text-muted-foreground">
-                      <p>{session._count.playerSessions} players</p>
-                      <p>{new Date(session.createdAt).toLocaleString()}</p>
+                      <p className="font-semibold text-foreground">{session._count.playerSessions} ผู้เล่น</p>
+                      <p>{new Date(session.createdAt).toLocaleString('th-TH')}</p>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground">No analytics data yet.</p>
+              <p className="text-sm text-muted-foreground py-4 text-center">ยังไม่มีข้อมูลวิเคราะห์</p>
             )}
           </div>
         </div>
@@ -135,4 +151,3 @@ export default function AnalyticsPage() {
     </div>
   );
 }
-
