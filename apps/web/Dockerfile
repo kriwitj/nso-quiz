@@ -10,7 +10,8 @@ COPY packages/shared/package.json ./packages/shared/
 COPY apps/web/package.json ./apps/web/
 
 # Install all dependencies workspace-aware (hoisted to /app/node_modules)
-RUN npm ci --ignore-scripts
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --ignore-scripts
 
 # ── Stage 2: Build ────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
@@ -36,7 +37,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # Run build from root to enable proper dependency tracing in monorepo standalone output
 RUN mkdir -p apps/web/public
-RUN npm run build -w web
+RUN --mount=type=cache,target=/app/apps/web/.next/cache \
+    npm run build -w web
 
 # ── Stage 3: Lean production image ───────────────────────────────────────────
 FROM node:20-alpine AS runner
