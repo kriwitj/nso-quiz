@@ -232,8 +232,6 @@ export function DashboardClient({ userName }: DashboardClientProps) {
           )}
         </div>
       </div>
-    </div>
-
       <SmartHostDialog
         dialog={dialog}
         setDialog={setDialog}
