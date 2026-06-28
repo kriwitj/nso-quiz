@@ -59,7 +59,7 @@ export function DashboardHeader({ user, onMenuClick }: Props) {
         </div>
 
         <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
+          onClick={() => signOut({ callbackUrl: '/' })}
           className="w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
           title="ออกจากระบบ"
           aria-label="ออกจากระบบ"
