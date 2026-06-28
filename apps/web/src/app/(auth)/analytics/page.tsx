@@ -64,7 +64,7 @@ export default function AnalyticsPage() {
   return (
     <div className="max-w-6xl space-y-6 animate-slide-up">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">วิเคราะห์</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">วิเคราะห์</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {quizId
             ? 'ผลการทดสอบของควิซที่เลือก'
@@ -73,7 +73,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
         {stats.map((stat) => (
           <div key={stat.label} className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card p-5">
             <div className={`w-10 h-10 rounded-xl ${stat.iconBg} flex items-center justify-center`}>

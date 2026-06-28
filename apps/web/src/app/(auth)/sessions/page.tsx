@@ -30,16 +30,16 @@ export default function SessionsPage() {
 
   return (
     <div className="max-w-5xl space-y-6 animate-slide-up">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">ประวัติเซสชัน</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">ประวัติเซสชัน</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             ดูห้องที่เคยเปิดและกลับไปยังเซสชันที่ยังดำเนินอยู่
           </p>
         </div>
-        <div className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card px-5 py-3 text-right">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">เซสชันทั้งหมด</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">{data?.total ?? 0}</p>
+        <div className="bg-white rounded-xl border border-nso-outline-variant/30 shadow-card px-4 py-2.5 text-right flex-shrink-0">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">ทั้งหมด</p>
+          <p className="text-xl font-bold text-foreground">{data?.total ?? 0}</p>
         </div>
       </div>
 
@@ -59,44 +59,38 @@ export default function SessionsPage() {
             return (
               <div
                 key={session.id}
-                className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card p-5 md:flex md:items-center md:justify-between hover:shadow-card-hover transition-shadow"
+                className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card p-4 md:p-5 hover:shadow-card-hover transition-shadow"
               >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="truncate font-semibold text-foreground">{session.quiz.title}</h2>
-                    <StatusBadge status={session.status} />
-                    <span className="font-mono text-sm text-nso-primary bg-nso-primary-fixed/30 px-2 py-0.5 rounded">
-                      {session.roomCode}
-                    </span>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <StatusBadge status={session.status} />
+                      <span className="font-mono text-xs text-nso-primary bg-nso-primary-fixed/30 px-2 py-0.5 rounded">
+                        {session.roomCode}
+                      </span>
+                    </div>
+                    <h2 className="font-semibold text-foreground text-sm md:text-base truncate">{session.quiz.title}</h2>
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs md:text-sm text-muted-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <Users className="h-3.5 w-3.5" />
+                        {session._count.playerSessions} ผู้เล่น
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        {timeAgo(session.createdAt)}
+                      </span>
+                    </div>
                   </div>
-
-                  <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Users className="h-4 w-4" />
-                      {session._count.playerSessions} ผู้เล่น
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Clock3 className="h-4 w-4" />
-                      สร้าง {timeAgo(session.createdAt)}
-                    </span>
-                    {session.startedAt && (
-                      <span>เริ่ม {timeAgo(session.startedAt)}</span>
-                    )}
-                    {session.endedAt && <span>จบ {timeAgo(session.endedAt)}</span>}
-                  </div>
-                </div>
-
-                <div className="mt-4 flex gap-3 md:mt-0 md:pl-6">
                   <Link
                     href={`/sessions/${session.id}/host`}
-                    className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-colors ${
+                    className={`inline-flex items-center gap-1.5 rounded-xl px-3 md:px-4 py-2 text-xs md:text-sm font-semibold text-white transition-colors flex-shrink-0 ${
                       canResume
                         ? 'bg-nso-primary hover:bg-nso-primary-container'
                         : 'bg-nso-secondary hover:bg-nso-secondary-container'
                     }`}
                   >
-                    {canResume ? <Play className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
-                    {canResume ? 'เปิด Host' : 'ดูสรุป'}
+                    {canResume ? <Play className="h-3.5 w-3.5" /> : <Trophy className="h-3.5 w-3.5" />}
+                    <span className="hidden sm:inline">{canResume ? 'เปิด Host' : 'ดูสรุป'}</span>
                   </Link>
                 </div>
               </div>

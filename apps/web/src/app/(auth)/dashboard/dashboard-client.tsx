@@ -91,10 +91,10 @@ export function DashboardClient({ userName }: DashboardClientProps) {
   ];
 
   return (
-    <div className="space-y-8 max-w-7xl animate-slide-up">
+    <div className="space-y-6 max-w-7xl animate-slide-up">
       {/* Greeting */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">
           ยินดีต้อนรับกลับ, <span className="text-nso-primary">{firstName}</span>
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
@@ -103,27 +103,27 @@ export function DashboardClient({ userName }: DashboardClientProps) {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {stats.map((s) => (
           <div
             key={s.label}
-            className={`rounded-xl p-6 border transition-all hover:-translate-y-0.5 ${
+            className={`rounded-xl p-4 md:p-6 border transition-all hover:-translate-y-0.5 ${
               s.dark
                 ? 'bg-nso-primary border-nso-primary-container shadow-primary relative overflow-hidden'
                 : 'bg-white border-nso-outline-variant/30 shadow-card'
             }`}
           >
-            <div className="flex justify-between items-start mb-4">
-              <div className={`p-3 rounded-lg ${s.bg}`}>
-                <s.icon className={`w-5 h-5 ${s.iconColor}`} />
+            <div className="flex justify-between items-start mb-3 md:mb-4">
+              <div className={`p-2 md:p-3 rounded-lg ${s.bg}`}>
+                <s.icon className={`w-4 h-4 md:w-5 md:h-5 ${s.iconColor}`} />
               </div>
               {s.dark ? (
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                  <span className="text-xs text-white/80">Live</span>
+                  <span className="text-xs text-white/80 hidden sm:inline">Live</span>
                 </span>
               ) : (
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded ${s.badgeColor}`}>
+                <span className={`text-xs font-semibold px-1.5 py-0.5 rounded hidden sm:inline ${s.badgeColor}`}>
                   {s.badge}
                 </span>
               )}
@@ -131,7 +131,7 @@ export function DashboardClient({ userName }: DashboardClientProps) {
             <p className={`text-xs font-medium mb-1 ${s.dark ? 'text-white/70' : 'text-muted-foreground'}`}>
               {s.label}
             </p>
-            <p className={`text-2xl font-bold ${s.dark ? 'text-white' : 'text-foreground'}`}>
+            <p className={`text-xl md:text-2xl font-bold ${s.dark ? 'text-white' : 'text-foreground'}`}>
               {s.value.toLocaleString()}
             </p>
           </div>
@@ -139,34 +139,34 @@ export function DashboardClient({ userName }: DashboardClientProps) {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
         <Link
           href="/quizzes/new"
-          className="bg-nso-primary-container text-white rounded-2xl p-7 flex items-center gap-5 hover:opacity-95 transition-all group relative overflow-hidden shadow-primary"
+          className="bg-nso-primary-container text-white rounded-2xl p-5 md:p-7 flex items-center gap-4 md:gap-5 hover:opacity-95 transition-all group relative overflow-hidden shadow-primary"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-nso-primary to-nso-primary-container opacity-90" />
-          <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform relative z-10">
-            <Plus className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform relative z-10 flex-shrink-0">
+            <Plus className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </div>
-          <div className="flex-1 relative z-10">
-            <p className="font-bold text-base">สร้างควิซใหม่</p>
-            <p className="text-white/80 text-sm mt-0.5">สร้างแบบทดสอบจากข้อมูลสถิติของคุณ</p>
+          <div className="flex-1 relative z-10 min-w-0">
+            <p className="font-bold text-sm md:text-base">สร้างควิซใหม่</p>
+            <p className="text-white/80 text-xs md:text-sm mt-0.5">สร้างแบบทดสอบจากข้อมูลสถิติของคุณ</p>
           </div>
-          <ArrowRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform relative z-10" />
+          <ArrowRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform relative z-10 flex-shrink-0" />
         </Link>
 
         <Link
           href="/sessions"
-          className="bg-white border border-nso-outline-variant/40 rounded-2xl p-7 flex items-center gap-5 hover:shadow-card-hover transition-all group shadow-card"
+          className="bg-white border border-nso-outline-variant/40 rounded-2xl p-5 md:p-7 flex items-center gap-4 md:gap-5 hover:shadow-card-hover transition-all group shadow-card"
         >
-          <div className="w-12 h-12 rounded-xl bg-nso-secondary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <History className="w-6 h-6 text-nso-secondary" />
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-nso-secondary/10 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+            <History className="w-5 h-5 md:w-6 md:h-6 text-nso-secondary" />
           </div>
-          <div className="flex-1">
-            <p className="font-bold text-base text-foreground">ประวัติเซสชัน</p>
-            <p className="text-muted-foreground text-sm mt-0.5">ดูผลคะแนนและสถิติย้อนหลัง</p>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm md:text-base text-foreground">ประวัติเซสชัน</p>
+            <p className="text-muted-foreground text-xs md:text-sm mt-0.5">ดูผลคะแนนและสถิติย้อนหลัง</p>
           </div>
-          <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-nso-primary group-hover:translate-x-1 transition-all" />
+          <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-nso-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
         </Link>
       </div>
 
@@ -186,12 +186,12 @@ export function DashboardClient({ userName }: DashboardClientProps) {
           {quizzes?.items?.slice(0, 5).map((quiz, i) => (
             <div
               key={quiz.id}
-              className={`flex items-center gap-4 px-5 py-4 hover:bg-nso-surface-low transition-colors ${
+              className={`flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4 hover:bg-nso-surface-low transition-colors ${
                 i !== 0 ? 'border-t border-nso-outline-variant/20' : ''
               }`}
             >
-              <div className="w-10 h-10 rounded-lg bg-nso-primary-fixed/30 border border-nso-primary-fixed flex items-center justify-center flex-shrink-0">
-                <BookOpen className="w-5 h-5 text-nso-primary" />
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-nso-primary-fixed/30 border border-nso-primary-fixed flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-4 h-4 md:w-5 md:h-5 text-nso-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm text-foreground truncate">{quiz.title}</p>
@@ -199,19 +199,20 @@ export function DashboardClient({ userName }: DashboardClientProps) {
                   {quiz._count?.questions ?? 0} คำถาม · {timeAgo(quiz.updatedAt)}
                 </p>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-1.5 flex-shrink-0">
                 <Link
                   href={`/quizzes/${quiz.id}/edit`}
-                  className="px-3 py-1.5 rounded-lg border border-nso-primary text-nso-primary text-xs font-semibold hover:bg-nso-primary-fixed/20 transition-colors"
+                  className="hidden sm:flex px-3 py-1.5 rounded-lg border border-nso-primary text-nso-primary text-xs font-semibold hover:bg-nso-primary-fixed/20 transition-colors"
                 >
                   แก้ไข
                 </Link>
                 <button
                   onClick={() => startSession.mutate(quiz.id)}
                   disabled={startSession.isPending}
-                  className="px-3 py-1.5 rounded-lg bg-nso-primary text-white text-xs font-semibold hover:bg-nso-primary-container disabled:opacity-50 transition-colors flex items-center gap-1"
+                  className="px-2.5 md:px-3 py-1.5 rounded-lg bg-nso-primary text-white text-xs font-semibold hover:bg-nso-primary-container disabled:opacity-50 transition-colors flex items-center gap-1"
                 >
-                  <Play className="w-3 h-3" /> Host
+                  <Play className="w-3 h-3" />
+                  <span className="hidden sm:inline">Host</span>
                 </button>
               </div>
             </div>

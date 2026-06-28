@@ -59,20 +59,20 @@ export default function QuizzesPage() {
   );
 
   return (
-    <div className="max-w-5xl space-y-6 animate-slide-up">
+    <div className="max-w-5xl space-y-5 animate-slide-up">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">ควิซของฉัน</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            ทั้งหมด {data?.total ?? 0} ควิซ
-          </p>
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">ควิซของฉัน</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">ทั้งหมด {data?.total ?? 0} ควิซ</p>
         </div>
         <Link
           href="/quizzes/new"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-nso-primary text-white text-sm font-semibold hover:bg-nso-primary-container transition-colors shadow-primary"
+          className="flex items-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 rounded-xl bg-nso-primary text-white text-sm font-semibold hover:bg-nso-primary-container transition-colors shadow-primary flex-shrink-0"
         >
-          <Plus className="w-4 h-4" /> สร้างควิซใหม่
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">สร้างควิซใหม่</span>
+          <span className="sm:hidden">ใหม่</span>
         </Link>
       </div>
 
@@ -92,7 +92,7 @@ export default function QuizzesPage() {
       {isLoading ? (
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-nso-outline-variant/30 p-6 animate-pulse">
+            <div key={i} className="bg-white rounded-xl border border-nso-outline-variant/30 p-5 animate-pulse">
               <div className="h-5 bg-nso-surface-container rounded w-1/3 mb-3" />
               <div className="h-4 bg-nso-surface-low rounded w-1/2" />
             </div>
@@ -103,44 +103,57 @@ export default function QuizzesPage() {
           {filteredQuizzes?.map((quiz) => (
             <div
               key={quiz.id}
-              className="bg-white rounded-xl border border-nso-outline-variant/30 shadow-card p-5 flex items-center gap-4 group hover:shadow-card-hover transition-shadow"
+              className="bg-white rounded-xl border border-nso-outline-variant/30 shadow-card p-4 md:p-5 hover:shadow-card-hover transition-shadow"
             >
-              <div className="w-12 h-12 rounded-xl bg-nso-primary-fixed/30 border border-nso-primary-fixed flex items-center justify-center flex-shrink-0">
-                <BookOpen className="w-6 h-6 text-nso-primary" />
+              {/* Top row: icon + title + meta */}
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-nso-primary-fixed/30 border border-nso-primary-fixed flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <BookOpen className="w-5 h-5 text-nso-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground truncate text-sm md:text-base">{quiz.title}</p>
+                  <p className="text-muted-foreground text-xs md:text-sm mt-0.5">
+                    {quiz._count?.questions ?? 0} คำถาม · {quiz._count?.sessions ?? 0} เซสชัน · {timeAgo(quiz.updatedAt)}
+                  </p>
+                </div>
+                {/* Host button — top-right on mobile */}
+                <button
+                  onClick={() => startSessionMutation.mutate(quiz.id)}
+                  disabled={startSessionMutation.isPending}
+                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-nso-primary text-white text-xs font-semibold hover:bg-nso-primary-container disabled:opacity-50 transition-colors"
+                >
+                  <Play className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Host</span>
+                </button>
               </div>
 
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-foreground truncate">{quiz.title}</p>
-                <p className="text-muted-foreground text-sm mt-0.5">
-                  {quiz._count?.questions ?? 0} คำถาม ·{' '}
-                  {quiz._count?.sessions ?? 0} เซสชัน ·{' '}
-                  {timeAgo(quiz.updatedAt)}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Bottom row: secondary actions — always visible (not hover-only for touch support) */}
+              <div className="mt-3 pt-3 border-t border-nso-outline-variant/20 flex items-center gap-1">
                 <Link
                   href={`/analytics?quizId=${quiz.id}`}
-                  className="p-2 rounded-lg text-muted-foreground hover:text-nso-primary hover:bg-nso-primary-fixed/20 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-nso-primary hover:bg-nso-primary-fixed/20 transition-colors text-xs font-medium"
                   title="วิเคราะห์"
                 >
-                  <BarChart3 className="w-4 h-4" />
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">วิเคราะห์</span>
+                </Link>
+                <Link
+                  href={`/quizzes/${quiz.id}/edit`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-nso-primary hover:bg-nso-primary-fixed/20 transition-colors text-xs font-medium"
+                  title="แก้ไข"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">แก้ไข</span>
                 </Link>
                 <button
                   onClick={() => duplicateMutation.mutate(quiz.id)}
                   disabled={duplicateMutation.isPending}
-                  className="p-2 rounded-lg text-muted-foreground hover:text-nso-primary hover:bg-nso-primary-fixed/20 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-nso-primary hover:bg-nso-primary-fixed/20 disabled:opacity-50 transition-colors text-xs font-medium"
                   title="ทำสำเนา"
                 >
-                  <Copy className="w-4 h-4" />
+                  <Copy className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">ทำสำเนา</span>
                 </button>
-                <Link
-                  href={`/quizzes/${quiz.id}/edit`}
-                  className="p-2 rounded-lg text-muted-foreground hover:text-nso-primary hover:bg-nso-primary-fixed/20 transition-colors"
-                  title="แก้ไข"
-                >
-                  <Edit3 className="w-4 h-4" />
-                </Link>
                 <button
                   onClick={() => {
                     if (confirm(`ลบ "${quiz.title}"? ไม่สามารถย้อนกลับได้`)) {
@@ -148,25 +161,18 @@ export default function QuizzesPage() {
                     }
                   }}
                   disabled={deleteMutation.isPending}
-                  className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors text-xs font-medium ml-auto"
                   title="ลบ"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">ลบ</span>
                 </button>
               </div>
-
-              <button
-                onClick={() => startSessionMutation.mutate(quiz.id)}
-                disabled={startSessionMutation.isPending}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-nso-primary text-white text-sm font-semibold hover:bg-nso-primary-container disabled:opacity-50 flex-shrink-0 transition-colors"
-              >
-                <Play className="w-4 h-4" /> Host
-              </button>
             </div>
           ))}
 
           {!filteredQuizzes?.length && !isLoading && (
-            <div className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card p-12 text-center">
+            <div className="bg-white rounded-2xl border border-nso-outline-variant/30 shadow-card p-10 text-center">
               <div className="w-14 h-14 rounded-2xl bg-nso-primary-fixed/30 flex items-center justify-center mx-auto mb-4">
                 <BookOpen className="w-7 h-7 text-nso-primary" />
               </div>
