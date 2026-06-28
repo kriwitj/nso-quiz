@@ -1,11 +1,10 @@
 'use client';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { analyticsApi, quizApi, sessionApi } from '@/lib/api';
-import { BookOpen, Play, Users, Zap, Plus, ArrowRight, History } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { analyticsApi, quizApi } from '@/lib/api';
+import { BookOpen, Play, Users, Zap, Plus, ArrowRight, History, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { timeAgo } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import { useSmartHost, SmartHostDialog } from '@/hooks/use-smart-host';
 
 interface DashboardClientProps {
   userName: string;
@@ -30,7 +29,7 @@ interface OverviewData {
 }
 
 export function DashboardClient({ userName }: DashboardClientProps) {
-  const router = useRouter();
+  const { handleHost, handleResume, handleCancelAndCreate, handleAbortAndCreate, isChecking, isDialogPending, dialog, setDialog } = useSmartHost();
 
   const { data: overview } = useQuery<OverviewData>({
     queryKey: ['analytics', 'overview'],
@@ -40,12 +39,6 @@ export function DashboardClient({ userName }: DashboardClientProps) {
   const { data: quizzes } = useQuery<QuizzesData>({
     queryKey: ['quizzes'],
     queryFn: () => quizApi.list().then((r) => r.data),
-  });
-
-  const startSession = useMutation({
-    mutationFn: (quizId: string) => sessionApi.create(quizId),
-    onSuccess: (res) => router.push(`/sessions/${res.data.id}/host`),
-    onError: () => toast.error('ไม่สามารถเริ่มเซสชันได้'),
   });
 
   const firstName = userName?.split(' ')[0] ?? 'ผู้ใช้';
@@ -207,11 +200,15 @@ export function DashboardClient({ userName }: DashboardClientProps) {
                   แก้ไข
                 </Link>
                 <button
-                  onClick={() => startSession.mutate(quiz.id)}
-                  disabled={startSession.isPending}
+                  onClick={() => handleHost(quiz.id)}
+                  disabled={isChecking(quiz.id)}
                   className="px-2.5 md:px-3 py-1.5 rounded-lg bg-nso-primary text-white text-xs font-semibold hover:bg-nso-primary-container disabled:opacity-50 transition-colors flex items-center gap-1"
                 >
-                  <Play className="w-3 h-3" />
+                  {isChecking(quiz.id) ? (
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Play className="w-3 h-3" />
+                  )}
                   <span className="hidden sm:inline">Host</span>
                 </button>
               </div>
@@ -235,6 +232,16 @@ export function DashboardClient({ userName }: DashboardClientProps) {
           )}
         </div>
       </div>
+    </div>
+
+      <SmartHostDialog
+        dialog={dialog}
+        setDialog={setDialog}
+        onResume={handleResume}
+        onCancelAndCreate={handleCancelAndCreate}
+        onAbortAndCreate={handleAbortAndCreate}
+        isPending={isDialogPending}
+      />
     </div>
   );
 }
