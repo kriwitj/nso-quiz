@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   ArrowRight,
   BarChart3,
@@ -182,14 +181,11 @@ export default function LandingPage() {
           <div className="relative flex items-center justify-center lg:justify-end mt-6 lg:mt-0">
             <div className="relative w-full max-w-[480px]">
               {/* Hero image */}
-              <Image
-                src="/images/hero-image.png"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/images/hero-image.png`}
                 alt="NSO Quiz hero"
-                width={480}
-                height={480}
                 className="w-full h-auto object-contain drop-shadow-2xl"
-                priority
-                unoptimized
               />
 
               {/* Floating leaderboard */}

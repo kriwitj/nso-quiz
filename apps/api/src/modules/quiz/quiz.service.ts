@@ -73,7 +73,22 @@ export class QuizService {
     const quiz = await this.prisma.quiz.findUnique({ where: { id } });
     if (!quiz) throw new NotFoundException('Quiz not found');
     if (quiz.hostId !== userId) throw new ForbiddenException('Access denied');
-    await this.prisma.quiz.delete({ where: { id } });
+
+    // Delete sessions and their children first (no cascade on GameSession→Quiz)
+    const sessions = await this.prisma.gameSession.findMany({
+      where: { quizId: id },
+      select: { id: true },
+    });
+    const sessionIds = sessions.map((s) => s.id);
+
+    await this.prisma.$transaction([
+      this.prisma.leaderboardEntry.deleteMany({ where: { sessionId: { in: sessionIds } } }),
+      this.prisma.playerAnswer.deleteMany({ where: { sessionId: { in: sessionIds } } }),
+      this.prisma.playerSession.deleteMany({ where: { sessionId: { in: sessionIds } } }),
+      this.prisma.gameSession.deleteMany({ where: { id: { in: sessionIds } } }),
+      this.prisma.quiz.delete({ where: { id } }),
+    ]);
+
     return { success: true };
   }
 
