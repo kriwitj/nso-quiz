@@ -6,7 +6,7 @@ import { useGame } from '@/hooks/useGame';
 import { GameState, SOCKET_EVENTS } from '@quiz/shared';
 import { connectSocket } from '@/lib/socket';
 import { cn, getRankEmoji } from '@/lib/utils';
-import { Clock, CheckCircle2, XCircle, Zap, Trophy, PauseCircle } from 'lucide-react';
+import { Clock, CheckCircle2, XCircle, Zap, Trophy, PauseCircle, Volume2, VolumeX } from 'lucide-react';
 import Image from 'next/image';
 
 const CHOICE_COLORS = [
@@ -42,18 +42,23 @@ export default function QuestionPage() {
   // Audio refs
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
   const yayRef = useRef<HTMLAudioElement | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(false);
 
   void setHasAnswered;
 
-  // Init & cleanup audio
+  // Init audio elements (do NOT autoplay — wait for user gesture)
   useEffect(() => {
     bgMusicRef.current = new Audio(`${BASE_PATH}/sounds/game-music.mp3`);
     bgMusicRef.current.loop = true;
     bgMusicRef.current.volume = 0.35;
-    bgMusicRef.current.play().catch(() => null); // blocked on mobile until interaction
 
     yayRef.current = new Audio(`${BASE_PATH}/sounds/yay.mp3`);
     yayRef.current.volume = 0.7;
+
+    // Try autoplay; if it works mark sound as enabled
+    bgMusicRef.current.play()
+      .then(() => setSoundEnabled(true))
+      .catch(() => null); // browser blocked — user must tap 🔊
 
     return () => {
       bgMusicRef.current?.pause();
@@ -62,13 +67,31 @@ export default function QuestionPage() {
     };
   }, []);
 
+  // Toggle sound button handler
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    if (next) {
+      bgMusicRef.current?.play().catch(() => null);
+      // Unlock yay within user gesture so it can play later from useEffect
+      if (yayRef.current) {
+        yayRef.current.play().then(() => {
+          yayRef.current!.pause();
+          yayRef.current!.currentTime = 0;
+        }).catch(() => null);
+      }
+    } else {
+      bgMusicRef.current?.pause();
+    }
+  };
+
   // Play yay when correct answer result arrives
   useEffect(() => {
-    if (answerResult?.correct && yayRef.current) {
+    if (answerResult?.correct && soundEnabled && yayRef.current) {
       yayRef.current.currentTime = 0;
       yayRef.current.play().catch(() => null);
     }
-  }, [answerResult]);
+  }, [answerResult, soundEnabled]);
 
   useEffect(() => {
     if (!currentQuestion) return;
@@ -137,14 +160,6 @@ export default function QuestionPage() {
 
   const handleAnswer = (choiceId: string) => {
     if (hasAnswered || questionEnded || !currentQuestion) return;
-    // Unlock audio on user gesture (required by browser autoplay policy)
-    if (bgMusicRef.current?.paused) bgMusicRef.current.play().catch(() => null);
-    // Pre-unlock yay so useEffect can play it later (after WS event, outside click scope)
-    if (yayRef.current) {
-      yayRef.current.play().catch(() => null);
-      yayRef.current.pause();
-      yayRef.current.currentTime = 0;
-    }
     setSelectedChoice(choiceId);
     submitAnswer(currentQuestion.id, choiceId);
   };
@@ -234,6 +249,17 @@ export default function QuestionPage() {
         <span className="text-xs font-semibold text-muted-foreground flex-shrink-0">
           Q{currentQuestion.questionIndex + 1}/{currentQuestion.totalQuestions}
         </span>
+
+        {/* Sound toggle */}
+        <button
+          onClick={toggleSound}
+          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+          title={soundEnabled ? 'ปิดเสียง' : 'เปิดเสียง'}
+        >
+          {soundEnabled
+            ? <Volume2 className="w-4 h-4 text-violet-500" />
+            : <VolumeX className="w-4 h-4 text-gray-400" />}
+        </button>
       </header>
 
       {/* ── Question area: flex-[2] — takes ~35% of remaining height ── */}
