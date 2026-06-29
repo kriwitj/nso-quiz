@@ -188,6 +188,8 @@ export default function HostSessionPage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+  const clapRef = useRef<HTMLAudioElement | null>(null);
+  const yayRef = useRef<HTMLAudioElement | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(() =>
     typeof window !== 'undefined' ? localStorage.getItem('quiz-sound') !== 'off' : true
   );
@@ -326,20 +328,48 @@ export default function HostSessionPage() {
     bgMusicRef.current = new Audio(`${BASE_PATH}/sounds/game-music.mp3`);
     bgMusicRef.current.loop = true;
     bgMusicRef.current.volume = 0.35;
+
+    clapRef.current = new Audio(`${BASE_PATH}/sounds/clap.mp3`);
+    clapRef.current.volume = 0.7;
+
+    yayRef.current = new Audio(`${BASE_PATH}/sounds/yay.mp3`);
+    yayRef.current.volume = 0.7;
+
     if (localStorage.getItem('quiz-sound') !== 'off') {
       bgMusicRef.current.play()
         .then(() => setSoundEnabled(true))
         .catch(() => setSoundEnabled(false));
     }
-    return () => { bgMusicRef.current?.pause(); bgMusicRef.current = null; };
+    return () => {
+      bgMusicRef.current?.pause(); bgMusicRef.current = null;
+      clapRef.current?.pause(); clapRef.current = null;
+      yayRef.current = null;
+    };
   }, []);
+
+  // Play clap when game ends
+  useEffect(() => {
+    if (gameState === GameState.ENDED && soundEnabled && clapRef.current) {
+      clapRef.current.currentTime = 0;
+      clapRef.current.play().catch(() => null);
+    }
+  }, [gameState, soundEnabled]);
 
   const toggleSound = () => {
     const next = !soundEnabled;
     setSoundEnabled(next);
     localStorage.setItem('quiz-sound', next ? 'on' : 'off');
-    if (next) { bgMusicRef.current?.play().catch(() => null); }
-    else { bgMusicRef.current?.pause(); }
+    if (next) {
+      bgMusicRef.current?.play().catch(() => null);
+      // Unlock clap & yay within user gesture
+      [clapRef, yayRef].forEach(ref => {
+        if (ref.current) {
+          ref.current.play().then(() => { ref.current!.pause(); ref.current!.currentTime = 0; }).catch(() => null);
+        }
+      });
+    } else {
+      bgMusicRef.current?.pause();
+    }
   };
 
   const handleStart = () => { if (roomCode) connectSocket().emit(SOCKET_EVENTS.ROOM_START, { roomCode, countdownDuration }); };
@@ -500,7 +530,13 @@ export default function HostSessionPage() {
           </button>
           <div className="w-px h-5 bg-white/10" />
           {!showScoreboard ? (
-            <button onClick={() => setShowScoreboard(true)} className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-bold transition-colors text-sm', theme.activeBtnBg)}>
+            <button onClick={() => {
+              setShowScoreboard(true);
+              if (soundEnabled && yayRef.current) {
+                yayRef.current.currentTime = 0;
+                yayRef.current.play().catch(() => null);
+              }
+            }} className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-bold transition-colors text-sm', theme.activeBtnBg)}>
               <Trophy className="w-4 h-4" /> ดูคะแนน
             </button>
           ) : (
