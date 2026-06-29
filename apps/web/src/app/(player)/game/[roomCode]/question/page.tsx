@@ -137,8 +137,14 @@ export default function QuestionPage() {
 
   const handleAnswer = (choiceId: string) => {
     if (hasAnswered || questionEnded || !currentQuestion) return;
-    // Resume music if autoplay was blocked by mobile browser
+    // Unlock audio on user gesture (required by browser autoplay policy)
     if (bgMusicRef.current?.paused) bgMusicRef.current.play().catch(() => null);
+    // Pre-unlock yay so useEffect can play it later (after WS event, outside click scope)
+    if (yayRef.current) {
+      yayRef.current.play().catch(() => null);
+      yayRef.current.pause();
+      yayRef.current.currentTime = 0;
+    }
     setSelectedChoice(choiceId);
     submitAnswer(currentQuestion.id, choiceId);
   };

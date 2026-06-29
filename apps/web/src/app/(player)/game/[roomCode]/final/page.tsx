@@ -19,10 +19,23 @@ export default function FinalPage() {
   const clapRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    clapRef.current = new Audio(`${BASE_PATH}/sounds/clap.mp3`);
-    clapRef.current.volume = 0.7;
-    clapRef.current.play().catch(() => null);
-    return () => { clapRef.current?.pause(); clapRef.current = null; };
+    const audio = new Audio(`${BASE_PATH}/sounds/clap.mp3`);
+    audio.volume = 0.7;
+    clapRef.current = audio;
+
+    // Try autoplay; if blocked, play on first touch/click (mobile autoplay policy)
+    audio.play().catch(() => {
+      const unlock = () => {
+        audio.play().catch(() => null);
+        document.removeEventListener('pointerdown', unlock);
+      };
+      document.addEventListener('pointerdown', unlock, { once: true });
+    });
+
+    return () => {
+      audio.pause();
+      clapRef.current = null;
+    };
   }, []);
   const myEntry = leaderboard.find((entry) => entry.playerId === myPlayerId);
 
