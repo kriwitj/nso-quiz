@@ -29,6 +29,8 @@ export default function QuizzesPage() {
   const { data, isLoading } = useQuery<QuizzesData>({
     queryKey: ['quizzes'],
     queryFn: () => quizApi.list().then((r) => r.data),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const deleteMutation = useMutation({
