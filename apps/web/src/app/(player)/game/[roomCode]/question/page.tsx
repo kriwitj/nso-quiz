@@ -42,11 +42,14 @@ export default function QuestionPage() {
   // Audio refs
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
   const yayRef = useRef<HTMLAudioElement | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  // Default ON — read from localStorage so preference persists across question changes
+  const [soundEnabled, setSoundEnabled] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('quiz-sound') !== 'off' : true
+  );
 
   void setHasAnswered;
 
-  // Init audio elements (do NOT autoplay — wait for user gesture)
+  // Init audio elements
   useEffect(() => {
     bgMusicRef.current = new Audio(`${BASE_PATH}/sounds/game-music.mp3`);
     bgMusicRef.current.loop = true;
@@ -55,10 +58,12 @@ export default function QuestionPage() {
     yayRef.current = new Audio(`${BASE_PATH}/sounds/yay.mp3`);
     yayRef.current.volume = 0.7;
 
-    // Try autoplay; if it works mark sound as enabled
-    bgMusicRef.current.play()
-      .then(() => setSoundEnabled(true))
-      .catch(() => null); // browser blocked — user must tap 🔊
+    // Attempt to play if preference is ON
+    if (localStorage.getItem('quiz-sound') !== 'off') {
+      bgMusicRef.current.play()
+        .then(() => setSoundEnabled(true))
+        .catch(() => setSoundEnabled(false)); // blocked — show 🔇, user taps to enable
+    }
 
     return () => {
       bgMusicRef.current?.pause();
@@ -67,10 +72,11 @@ export default function QuestionPage() {
     };
   }, []);
 
-  // Toggle sound button handler
+  // Toggle sound button handler (called within user gesture — safe to play)
   const toggleSound = () => {
     const next = !soundEnabled;
     setSoundEnabled(next);
+    localStorage.setItem('quiz-sound', next ? 'on' : 'off');
     if (next) {
       bgMusicRef.current?.play().catch(() => null);
       // Unlock yay within user gesture so it can play later from useEffect

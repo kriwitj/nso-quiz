@@ -21,9 +21,13 @@ import {
   Copy,
   Check,
   Tv,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 interface HostSessionPlayer {
   id: string;
@@ -183,6 +187,10 @@ export default function HostSessionPage() {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('quiz-sound') !== 'off' : true
+  );
 
   const { data, isLoading, isError } = useQuery<HostSessionData>({
     queryKey: ['session', id],
@@ -313,6 +321,27 @@ export default function HostSessionPage() {
     };
   }, [auth?.user?.id, data?.id, data?.quizId, data?.status]);
 
+  // Audio setup — default ON, persisted in localStorage
+  useEffect(() => {
+    bgMusicRef.current = new Audio(`${BASE_PATH}/sounds/game-music.mp3`);
+    bgMusicRef.current.loop = true;
+    bgMusicRef.current.volume = 0.35;
+    if (localStorage.getItem('quiz-sound') !== 'off') {
+      bgMusicRef.current.play()
+        .then(() => setSoundEnabled(true))
+        .catch(() => setSoundEnabled(false));
+    }
+    return () => { bgMusicRef.current?.pause(); bgMusicRef.current = null; };
+  }, []);
+
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    localStorage.setItem('quiz-sound', next ? 'on' : 'off');
+    if (next) { bgMusicRef.current?.play().catch(() => null); }
+    else { bgMusicRef.current?.pause(); }
+  };
+
   const handleStart = () => { if (roomCode) connectSocket().emit(SOCKET_EVENTS.ROOM_START, { roomCode, countdownDuration }); };
   const handleNext = () => { if (roomCode) connectSocket().emit(SOCKET_EVENTS.QUESTION_NEXT, { roomCode }); };
   const handleSkip = () => { if (roomCode) connectSocket().emit(SOCKET_EVENTS.QUESTION_SKIP, { roomCode }); };
@@ -386,6 +415,10 @@ export default function HostSessionPage() {
 
         {/* Floating host controls */}
         <div className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-2">
+          <button onClick={toggleSound} className="p-2.5 rounded-xl hover:bg-white/10" title={soundEnabled ? 'ปิดเสียง' : 'เปิดเสียง'}>
+            {soundEnabled ? <Volume2 className="w-5 h-5 text-violet-300" /> : <VolumeX className="w-5 h-5 text-white/30" />}
+          </button>
+          <div className="w-px h-5 bg-white/10" />
           <button onClick={handlePause} disabled={isPaused} className="p-2.5 rounded-xl hover:bg-white/10 text-yellow-300 disabled:opacity-40" title="หยุดชั่วคราว"><CirclePause className="w-5 h-5" /></button>
           <button onClick={handleSkip} className="p-2.5 rounded-xl hover:bg-white/10 text-amber-400" title="ข้ามคำถาม"><SkipForward className="w-5 h-5" /></button>
           <button onClick={handleEnd} className="p-2.5 rounded-xl hover:bg-white/10 text-rose-400" title="จบเกม"><Flag className="w-5 h-5" /></button>
@@ -462,6 +495,10 @@ export default function HostSessionPage() {
         <div className="absolute inset-0" style={{ background: theme.glow }} />
 
         <div className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-2">
+          <button onClick={toggleSound} className="p-2.5 rounded-xl hover:bg-white/10" title={soundEnabled ? 'ปิดเสียง' : 'เปิดเสียง'}>
+            {soundEnabled ? <Volume2 className="w-4 h-4 text-violet-300" /> : <VolumeX className="w-4 h-4 text-white/30" />}
+          </button>
+          <div className="w-px h-5 bg-white/10" />
           {!showScoreboard ? (
             <button onClick={() => setShowScoreboard(true)} className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-bold transition-colors text-sm', theme.activeBtnBg)}>
               <Trophy className="w-4 h-4" /> ดูคะแนน
@@ -628,6 +665,14 @@ export default function HostSessionPage() {
               <option value={10}>10 วินาที</option>
             </select>
           </div>
+
+          <button
+            onClick={toggleSound}
+            className="p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+            title={soundEnabled ? 'ปิดเสียง' : 'เปิดเสียง'}
+          >
+            {soundEnabled ? <Volume2 className="w-5 h-5 text-violet-300" /> : <VolumeX className="w-5 h-5 text-white/30" />}
+          </button>
 
           <button
             onClick={handleStart}
