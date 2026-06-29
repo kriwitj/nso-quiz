@@ -10,10 +10,10 @@ import { Clock, CheckCircle2, XCircle, Zap, Trophy, PauseCircle } from 'lucide-r
 import Image from 'next/image';
 
 const CHOICE_COLORS = [
-  { bg: 'from-red-500 to-rose-600', icon: '\u25b2' },
-  { bg: 'from-blue-500 to-cyan-600', icon: '\u2666' },
-  { bg: 'from-yellow-500 to-amber-600', icon: '\u25cf' },
-  { bg: 'from-green-500 to-emerald-600', icon: '\u25a0' },
+  { bg: 'from-red-500 to-rose-600',       icon: '▲', shadow: 'shadow-red-500/40' },
+  { bg: 'from-blue-500 to-cyan-600',       icon: '◆', shadow: 'shadow-blue-500/40' },
+  { bg: 'from-yellow-500 to-amber-600',    icon: '●', shadow: 'shadow-amber-500/40' },
+  { bg: 'from-green-500 to-emerald-600',   icon: '■', shadow: 'shadow-green-500/40' },
 ];
 
 export default function QuestionPage() {
@@ -37,13 +37,10 @@ export default function QuestionPage() {
   const [correctChoiceIds, setCorrectChoiceIds] = useState<string[]>([]);
   const [isPaused, setIsPaused] = useState(false);
 
-  // suppress lint: setHasAnswered is used via submitAnswer internally
   void setHasAnswered;
 
-  // Timer countdown — starts fresh when question changes
   useEffect(() => {
     if (!currentQuestion) return;
-    // Use the store's current timeRemaining if set (e.g. by reconnect or new question), otherwise fallback to limit
     const initialTime = timeRemaining > 0 ? timeRemaining : currentQuestion.timeLimit;
     setTimeRemaining(initialTime);
     setQuestionEnded(false);
@@ -62,35 +59,29 @@ export default function QuestionPage() {
   useEffect(() => {
     const socket = connectSocket();
 
-    // Question ended: show correct answers
     socket.on(SOCKET_EVENTS.QUESTION_END, (data: { correctChoiceIds: string[] }) => {
       setQuestionEnded(true);
       setCorrectChoiceIds(data.correctChoiceIds || []);
       if (timerRef.current) clearInterval(timerRef.current);
     });
 
-    // Game over: navigate to final
     socket.on(SOCKET_EVENTS.GAME_END, () => router.push(`/game/${roomCode}/final`));
 
-    // Next question: clear ended state (question page stays mounted)
     socket.on(SOCKET_EVENTS.QUESTION_SHOW, () => {
       setQuestionEnded(false);
       setCorrectChoiceIds([]);
       setIsPaused(false);
     });
 
-    // Pause / resume state changes
     socket.on(SOCKET_EVENTS.ROOM_STATE, (data: { state: GameState }) => {
       if (data.state === GameState.PAUSED) {
         setIsPaused(true);
-        // Freeze countdown during pause
         if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
       } else if (data.state === GameState.QUESTION_ACTIVE) {
         setIsPaused(false);
       }
     });
 
-    // Server resync after resume: restart countdown from accurate remaining time
     socket.on('timer:sync', (data: { expiryTimestamp: number }) => {
       const remainingSec = Math.max(0, Math.ceil((data.expiryTimestamp - Date.now()) / 1000));
       setTimeRemaining(remainingSec);
@@ -120,143 +111,164 @@ export default function QuestionPage() {
   };
 
   if (!currentQuestion) return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="h-dvh flex items-center justify-center bg-[#f5f6fa]">
       <div className="text-center">
-        <div className="w-16 h-16 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-muted-foreground">Loading question…</p>
+        <div className="w-14 h-14 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-muted-foreground text-sm">กำลังโหลดคำถาม…</p>
       </div>
     </div>
   );
 
-  const timerPercent = isPaused ? (timeRemaining / currentQuestion.timeLimit) * 100
-    : (timeRemaining / currentQuestion.timeLimit) * 100;
+  const timerPercent = (timeRemaining / currentQuestion.timeLimit) * 100;
   const timerColor =
-    timerPercent > 50 ? 'bg-green-500' : timerPercent > 25 ? 'bg-yellow-500' : 'bg-red-500';
+    timerPercent > 50 ? 'bg-green-500' : timerPercent > 25 ? 'bg-yellow-400' : 'bg-red-500';
 
   const myEntry = leaderboard.find(e => e.playerId === myPlayerId);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    // h-dvh = accounts for mobile browser address bar collapse
+    <div className="h-dvh flex flex-col overflow-hidden bg-[#f5f6fa]">
+
       {/* Paused overlay */}
       {isPaused && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-10 text-center">
-            <PauseCircle className="w-20 h-20 text-violet-400 mx-auto mb-4" />
-            <h2 className="font-display text-3xl font-bold mb-2">Game Paused</h2>
-            <p className="text-muted-foreground">Waiting for the host to resume…</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-6">
+          <div className="bg-white rounded-3xl p-10 text-center shadow-2xl max-w-xs w-full">
+            <PauseCircle className="w-16 h-16 text-violet-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2 text-foreground">หยุดชั่วคราว</h2>
+            <p className="text-muted-foreground text-sm">รอ Host กลับมาดำเนินต่อ…</p>
           </div>
         </div>
       )}
-      {/* Header / timer bar */}
-      <div className="glass border-b border-white/10 px-4 py-3 flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <Zap className="w-5 h-5 text-violet-400" />
-          <span className="font-display font-bold gradient-text">QuizLive</span>
-        </div>
-        <div className="flex-1">
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className={cn('h-full rounded-full transition-all duration-1000', timerColor)}
-              style={{ width: `${timerPercent}%` }}
-            />
+
+      {/* Answer result overlay */}
+      {answerResult && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-6">
+          <div className={cn(
+            'bg-white rounded-3xl p-8 text-center max-w-sm w-full shadow-2xl border-2',
+            answerResult.correct ? 'border-green-400' : 'border-rose-400',
+          )}>
+            {answerResult.correct
+              ? <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto mb-3" />
+              : <XCircle className="w-14 h-14 text-rose-500 mx-auto mb-3" />}
+            <h3 className="text-2xl font-bold mb-2 text-foreground">
+              {answerResult.correct ? 'ถูกต้อง! 🎉' : 'ผิด!'}
+            </h3>
+            {answerResult.correct && (
+              <p className="text-4xl font-black text-violet-600 mb-1">
+                +{answerResult.points.toLocaleString()}
+              </p>
+            )}
+            <p className="text-muted-foreground text-sm">รวม {answerResult.totalScore.toLocaleString()} คะแนน</p>
+            {answerResult.streak > 1 && (
+              <p className="text-orange-500 font-semibold mt-2 text-sm">🔥 Streak ×{answerResult.streak}! โบนัสพิเศษ</p>
+            )}
+            <p className="text-xs text-muted-foreground mt-4">รอคำถามถัดไป…</p>
           </div>
         </div>
-        <div className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-full font-display font-bold text-lg', timeRemaining <= 5 ? 'text-red-400 animate-pulse' : 'text-foreground')}>
+      )}
+
+      {/* ── Header: brand + timer bar + clock + Q index ── */}
+      <header className="flex-none bg-white border-b border-gray-200 px-4 py-2.5 flex items-center gap-3">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <Zap className="w-5 h-5 text-violet-500" />
+          <span className="font-black text-violet-600 text-base tracking-tight">QuizLive</span>
+        </div>
+
+        {/* Timer bar */}
+        <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className={cn('h-full rounded-full transition-all duration-1000', timerColor)}
+            style={{ width: `${timerPercent}%` }}
+          />
+        </div>
+
+        {/* Countdown number */}
+        <div className={cn(
+          'flex items-center gap-1 font-black text-lg tabular-nums flex-shrink-0 min-w-[2.5rem] justify-center',
+          timeRemaining <= 5 ? 'text-red-500 animate-pulse' : 'text-foreground',
+        )}>
           <Clock className="w-4 h-4" />
-          <span>{timeRemaining}</span>
+          {timeRemaining}
         </div>
-        <div className="text-sm text-muted-foreground">
+
+        {/* Question index */}
+        <span className="text-xs font-semibold text-muted-foreground flex-shrink-0">
           Q{currentQuestion.questionIndex + 1}/{currentQuestion.totalQuestions}
-        </div>
-      </div>
+        </span>
+      </header>
 
-      {/* Body */}
-      <div className="flex-1 flex flex-col p-4 md:p-8">
-        {/* Question text + image */}
-        <div className="text-center mb-8 flex-1 flex flex-col items-center justify-center max-w-3xl mx-auto w-full">
-          {currentQuestion.imageUrl && (
-            <div className="relative w-full max-w-sm h-48 mb-6 rounded-2xl overflow-hidden">
-              <Image src={currentQuestion.imageUrl} alt="Question image" fill className="object-cover" />
-            </div>
-          )}
-          <h2 className="font-display text-2xl md:text-3xl font-bold leading-tight">
-            {currentQuestion.text}
-          </h2>
-        </div>
-
-        {/* Answer result overlay */}
-        {answerResult && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
-            <div className={cn(
-              'glass-card rounded-3xl p-8 text-center max-w-sm w-full',
-              answerResult.correct ? 'border-green-500/50' : 'border-rose-500/50',
-            )}>
-              {answerResult.correct
-                ? <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                : <XCircle className="w-16 h-16 text-rose-400 mx-auto mb-4" />}
-              <h3 className="font-display text-2xl font-bold mb-2">
-                {answerResult.correct ? 'Correct!' : 'Oops!'}
-              </h3>
-              {answerResult.correct && (
-                <p className="text-4xl font-display font-bold gradient-text mb-2">
-                  +{answerResult.points.toLocaleString()}
-                </p>
-              )}
-              <p className="text-muted-foreground">Total: {answerResult.totalScore.toLocaleString()} pts</p>
-              {answerResult.streak > 1 && (
-                <p className="text-orange-400 mt-2">Streak ×{answerResult.streak}! Bonus applied!</p>
-              )}
-              <p className="text-sm text-muted-foreground mt-4">Waiting for next question…</p>
-            </div>
+      {/* ── Question area: flex-[2] — takes ~35% of remaining height ── */}
+      <div className="flex-[2] min-h-0 flex flex-col items-center justify-center px-5 py-3">
+        {currentQuestion.imageUrl && (
+          <div className="relative w-full max-w-xs h-36 mb-3 rounded-2xl overflow-hidden flex-shrink-0">
+            <Image src={currentQuestion.imageUrl} alt="Question" fill className="object-cover" />
           </div>
         )}
-
-        {/* Choice buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto w-full">
-          {currentQuestion.choices.map((choice, i) => {
-            const colors = CHOICE_COLORS[i % CHOICE_COLORS.length];
-            const isSelected = selectedChoiceId === choice.id;
-            const isCorrect = correctChoiceIds.includes(choice.id);
-            const isWrong = questionEnded && isSelected && !isCorrect;
-            return (
-              <button
-                key={choice.id}
-                onClick={() => handleAnswer(choice.id)}
-                disabled={hasAnswered || questionEnded}
-                className={cn(
-                  'relative overflow-hidden p-5 rounded-2xl text-left font-semibold text-lg transition-all duration-200',
-                  `bg-gradient-to-br ${colors.bg}`,
-                  !hasAnswered && !questionEnded && 'hover:scale-105 active:scale-95',
-                  isSelected && !questionEnded && 'ring-4 ring-white/50 scale-105',
-                  isCorrect && questionEnded && 'ring-4 ring-white/80 brightness-110',
-                  isWrong && 'opacity-50 grayscale',
-                  hasAnswered && !isSelected && 'opacity-60',
-                )}
-              >
-                <span className="absolute top-2 right-3 text-white/30 text-4xl font-black">{colors.icon}</span>
-                <span className="relative z-10 text-white drop-shadow">{choice.text}</span>
-                {isCorrect && questionEnded && (
-                  <CheckCircle2 className="absolute bottom-2 right-2 w-6 h-6 text-white" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* My rank & score */}
-        {myEntry && (
-          <div className="flex items-center justify-center gap-4 mt-6">
-            <div className="flex items-center gap-2 glass px-4 py-2 rounded-full">
-              <Trophy className="w-4 h-4 text-amber-400" />
-              <span className="text-sm font-semibold">{getRankEmoji(myEntry.rank)} Rank #{myEntry.rank}</span>
-            </div>
-            <div className="flex items-center gap-2 glass px-4 py-2 rounded-full">
-              <span className="text-sm text-muted-foreground">Score:</span>
-              <span className="text-sm font-bold gradient-text">{myEntry.score.toLocaleString()}</span>
-            </div>
-          </div>
-        )}
+        <h2 className="text-xl md:text-2xl font-bold text-center leading-snug text-foreground max-w-lg">
+          {currentQuestion.text}
+        </h2>
       </div>
+
+      {/* ── Choices: flex-[3] — takes ~50% of remaining height, always 2-col grid ── */}
+      <div className="flex-[3] min-h-0 grid grid-cols-2 gap-2.5 px-3 pb-2">
+        {currentQuestion.choices.map((choice, i) => {
+          const colors = CHOICE_COLORS[i % CHOICE_COLORS.length];
+          const isSelected = selectedChoiceId === choice.id;
+          const isCorrect = correctChoiceIds.includes(choice.id);
+          const isWrong = questionEnded && isSelected && !isCorrect;
+
+          return (
+            <button
+              key={choice.id}
+              onClick={() => handleAnswer(choice.id)}
+              disabled={hasAnswered || questionEnded}
+              className={cn(
+                'relative overflow-hidden rounded-2xl text-left font-bold text-sm md:text-base',
+                'flex flex-col justify-between p-3.5 md:p-5',
+                `bg-gradient-to-br ${colors.bg}`,
+                `shadow-lg ${colors.shadow}`,
+                'transition-all duration-200 active:scale-95',
+                !hasAnswered && !questionEnded && 'hover:scale-[1.02] hover:shadow-xl',
+                isSelected && !questionEnded && 'ring-4 ring-white/70 scale-[1.02]',
+                isCorrect && questionEnded && 'ring-4 ring-white brightness-110',
+                isWrong && 'opacity-40 grayscale scale-95',
+                hasAnswered && !isSelected && !questionEnded && 'opacity-60',
+              )}
+            >
+              {/* Shape icon — top-right */}
+              <span className="self-end text-white/25 text-3xl font-black leading-none">{colors.icon}</span>
+
+              {/* Choice text */}
+              <span className="text-white drop-shadow-sm leading-snug mt-auto">
+                {choice.text}
+              </span>
+
+              {/* Correct checkmark */}
+              {isCorrect && questionEnded && (
+                <CheckCircle2 className="absolute top-2 left-2 w-5 h-5 text-white drop-shadow" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── My rank bar: fixed bottom strip ── */}
+      {myEntry ? (
+        <div className="flex-none bg-white border-t border-gray-200 px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Trophy className="w-4 h-4 text-amber-500" />
+            <span className="text-sm font-bold text-foreground">
+              {getRankEmoji(myEntry.rank)} อันดับ #{myEntry.rank}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-muted-foreground">คะแนน</span>
+            <span className="text-sm font-black text-violet-600">{myEntry.score.toLocaleString()}</span>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-none h-safe-bottom" />
+      )}
     </div>
   );
 }
