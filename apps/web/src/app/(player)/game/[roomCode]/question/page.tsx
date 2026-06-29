@@ -16,6 +16,8 @@ const CHOICE_COLORS = [
   { bg: 'from-green-500 to-emerald-600',   icon: '■', shadow: 'shadow-green-500/40' },
 ];
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 export default function QuestionPage() {
   const { roomCode } = useParams<{ roomCode: string }>();
   const router = useRouter();
@@ -37,7 +39,36 @@ export default function QuestionPage() {
   const [correctChoiceIds, setCorrectChoiceIds] = useState<string[]>([]);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Audio refs
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+  const yayRef = useRef<HTMLAudioElement | null>(null);
+
   void setHasAnswered;
+
+  // Init & cleanup audio
+  useEffect(() => {
+    bgMusicRef.current = new Audio(`${BASE_PATH}/sounds/game-music.mp3`);
+    bgMusicRef.current.loop = true;
+    bgMusicRef.current.volume = 0.35;
+    bgMusicRef.current.play().catch(() => null); // blocked on mobile until interaction
+
+    yayRef.current = new Audio(`${BASE_PATH}/sounds/yay.mp3`);
+    yayRef.current.volume = 0.7;
+
+    return () => {
+      bgMusicRef.current?.pause();
+      bgMusicRef.current = null;
+      yayRef.current = null;
+    };
+  }, []);
+
+  // Play yay when correct answer result arrives
+  useEffect(() => {
+    if (answerResult?.correct && yayRef.current) {
+      yayRef.current.currentTime = 0;
+      yayRef.current.play().catch(() => null);
+    }
+  }, [answerResult]);
 
   useEffect(() => {
     if (!currentQuestion) return;
@@ -106,6 +137,8 @@ export default function QuestionPage() {
 
   const handleAnswer = (choiceId: string) => {
     if (hasAnswered || questionEnded || !currentQuestion) return;
+    // Resume music if autoplay was blocked by mobile browser
+    if (bgMusicRef.current?.paused) bgMusicRef.current.play().catch(() => null);
     setSelectedChoice(choiceId);
     submitAnswer(currentQuestion.id, choiceId);
   };

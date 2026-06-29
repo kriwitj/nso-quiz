@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { useGame } from '@/hooks/useGame';
 import { useGameStore } from '@/stores/game.store';
@@ -8,12 +9,21 @@ import { RotateCcw, Home } from 'lucide-react';
 import Link from 'next/link';
 
 const AVATAR_EMOJIS: Record<string, string> = { cat: '🐱', dog: '🐶', fox: '🦊', panda: '🐼', lion: '🦁', bear: '🐻', rabbit: '🐰', tiger: '🐯' };
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 export default function FinalPage() {
   const { roomCode } = useParams<{ roomCode: string }>();
   useGame(roomCode);
 
   const { leaderboard, myPlayerId, reset } = useGameStore();
+  const clapRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    clapRef.current = new Audio(`${BASE_PATH}/sounds/clap.mp3`);
+    clapRef.current.volume = 0.7;
+    clapRef.current.play().catch(() => null);
+    return () => { clapRef.current?.pause(); clapRef.current = null; };
+  }, []);
   const myEntry = leaderboard.find((entry) => entry.playerId === myPlayerId);
 
   return (
