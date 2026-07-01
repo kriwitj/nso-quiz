@@ -136,7 +136,7 @@ export class AuthService {
       nsoUsername: userinfo.preferred_username ?? null,
       nsoBranch: userinfo.branch ?? null,
       nsoDepartment: userinfo.department ?? null,
-      nsoProvinceCode: userinfo.province_code ?? null,
+      nsoProvince: userinfo.province ?? userinfo.province_code ?? null,
       nsoPermissions: perms,
     };
 

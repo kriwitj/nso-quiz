@@ -25,7 +25,7 @@ export class AdminService {
         select: {
           id: true, email: true, name: true, avatar: true,
           role: true, isActive: true, createdAt: true, lastLoginAt: true,
-          nsoUsername: true, nsoBranch: true, nsoDepartment: true, nsoProvinceCode: true,
+          nsoUsername: true, nsoBranch: true, nsoDepartment: true, nsoProvince: true,
           _count: { select: { quizzes: true, sessions: true } },
         },
         orderBy: { createdAt: 'desc' },

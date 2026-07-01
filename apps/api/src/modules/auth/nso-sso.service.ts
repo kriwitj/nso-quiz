@@ -15,6 +15,7 @@ export interface NsoUserinfo {
   branch?: string;
   department?: string;
   province_code?: string | null;
+  province?: string | null;
   permissions?: string[];
 }
 

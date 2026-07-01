@@ -18,7 +18,7 @@ interface UserItem {
   nsoUsername?: string;
   nsoBranch?: string;
   nsoDepartment?: string;
-  nsoProvinceCode?: string;
+  nsoProvince?: string;
   _count: { quizzes: number; sessions: number };
 }
 
@@ -154,8 +154,8 @@ export default function AdminUsersPage() {
                         <p className="text-xs text-foreground truncate max-w-[150px]">
                           {u.nsoBranch ?? u.nsoDepartment ?? '—'}
                         </p>
-                        {u.nsoProvinceCode && (
-                          <p className="text-xs text-muted-foreground">จังหวัด {u.nsoProvinceCode}</p>
+                        {u.nsoProvince && (
+                          <p className="text-xs text-muted-foreground">{u.nsoProvince}</p>
                         )}
                       </td>
 

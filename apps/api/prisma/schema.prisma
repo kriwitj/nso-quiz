@@ -39,7 +39,7 @@ model User {
   nsoUsername      String?             // preferred_username (e.g. kriwit.j)
   nsoBranch        String?             // กอง / ศูนย์
   nsoDepartment    String?             // กลุ่ม / ฝ่าย
-  nsoProvinceCode  String?             // รหัสจังหวัด (null = ส่วนกลาง)
+  nsoProvince      String?             // ชื่อจังหวัด จาก org_full scope (null = ส่วนกลาง)
   nsoPermissions   String[]            // permissions[] ที่รับจาก SSO ทุก login
   avatar           String?
   role             UserRole  @default(HOST)
