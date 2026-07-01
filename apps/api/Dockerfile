@@ -49,7 +49,7 @@ COPY --from=builder /app/packages/shared ./packages/shared
 # Copy the full hoisted node_modules (includes Prisma client & all runtime deps)
 COPY --from=builder /app/node_modules ./node_modules
 
-# Run migrations then start the compiled app
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/apps/api/src/main.js"]
+# Sync schema with DB (idempotent — safe to run on every startup)
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss=false && node dist/apps/api/src/main.js"]
 
 EXPOSE 4000
