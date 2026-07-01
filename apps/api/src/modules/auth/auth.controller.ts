@@ -111,8 +111,7 @@ export class AuthController {
     @Res() res: Response,
   ) {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL') ?? 'http://localhost:3000';
-    const basePath = this.configService.get<string>('NEXT_PUBLIC_BASE_PATH') ?? '';
-    const errorRedirect = `${frontendUrl}${basePath}/login?error=nso_sso_failed`;
+    const errorRedirect = `${frontendUrl}/login?error=nso_sso_failed`;
 
     try {
       if (error) throw new Error(`SSO returned error: ${error}`);
@@ -127,7 +126,7 @@ export class AuthController {
       const { accessToken, refreshToken } = await this.authService.login(user);
 
       return res.redirect(
-        `${frontendUrl}${basePath}/auth/sso-callback?token=${accessToken}&refresh=${refreshToken}`,
+        `${frontendUrl}/auth/sso-callback?token=${accessToken}&refresh=${refreshToken}`,
       );
     } catch (err) {
       this.logger.error('[NSO SSO callback error]', err?.message);

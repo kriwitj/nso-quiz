@@ -120,7 +120,7 @@ services:
       MINIO_BUCKET: ${MINIO_BUCKET:-quiz-assets}
       MINIO_USE_SSL: 'false'
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9000}
-      FRONTEND_URL: ${FRONTEND_URL:-https://province-stat.nso.go.th}
+      FRONTEND_URL: ${FRONTEND_URL:-https://province-stat.nso.go.th/nso-quiz}
     # Port not exposed to host — Traefik routes traffic internally via proxy_net
     healthcheck:
       test: ['CMD-SHELL', 'wget -qO- http://localhost:4000/api/health || exit 1']
