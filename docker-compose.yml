@@ -108,6 +108,11 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-https://province-stat.nso.go.th/nso-quiz/api/auth/google/callback}
+      NSO_SSO_BASE_URL: ${NSO_SSO_BASE_URL:-https://sso.nso.go.th}
+      NSO_SSO_CLIENT_ID: ${NSO_SSO_CLIENT_ID:-}
+      NSO_SSO_CLIENT_SECRET: ${NSO_SSO_CLIENT_SECRET:-}
+      NSO_SSO_REDIRECT_URI: ${NSO_SSO_REDIRECT_URI:-https://province-stat.nso.go.th/nso-quiz/api/auth/nso/callback}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-me-nextauth-secret}
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}

@@ -47,7 +47,7 @@ export class NsoSsoService {
       scope: 'openid profile email org_full',
       state,
     });
-    return { url: `${this.baseUrl}/public/api/sso/authorize.php?${params}`, state };
+    return { url: `${this.baseUrl}/api/sso/authorize.php?${params}`, state };
   }
 
   /** Exchange authorization code for an SSO access_token */
@@ -60,7 +60,7 @@ export class NsoSsoService {
       client_secret: this.clientSecret,
     });
 
-    const res = await fetch(`${this.baseUrl}/public/api/sso/token.php`, {
+    const res = await fetch(`${this.baseUrl}/api/sso/token.php`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body.toString(),
@@ -77,7 +77,7 @@ export class NsoSsoService {
 
   /** Fetch userinfo using the SSO access_token */
   async getUserinfo(accessToken: string): Promise<NsoUserinfo> {
-    const res = await fetch(`${this.baseUrl}/public/api/sso/userinfo.php`, {
+    const res = await fetch(`${this.baseUrl}/api/sso/userinfo.php`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     return res.json() as Promise<NsoUserinfo>;
@@ -86,7 +86,7 @@ export class NsoSsoService {
   /** Revoke the SSO session (best-effort, call on logout) */
   async logout(accessToken: string): Promise<void> {
     try {
-      await fetch(`${this.baseUrl}/public/api/auth/logout.php`, {
+      await fetch(`${this.baseUrl}/api/auth/logout.php`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}` },
       });
