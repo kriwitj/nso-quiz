@@ -144,6 +144,13 @@ services:
       - "traefik.http.routers.quiz-ws.middlewares=quiz-strip-basepath"
       # ── StripPrefix middleware (ลบ /nso-quiz ก่อนส่งต่อไป NestJS) ────────────
       - "traefik.http.middlewares.quiz-strip-basepath.stripprefix.prefixes=${BASE_PATH:-/nso-quiz}"
+      # ── Router: /nso-quiz/api/auth/nso* → NestJS (override web-auth rule) ──
+      # Longer PathPrefix wins over quiz-web-auth (/nso-quiz/api/auth)
+      - "traefik.http.routers.quiz-api-nso.rule=Host(`province-stat.nso.go.th`) && PathPrefix(`${BASE_PATH:-/nso-quiz}/api/auth/nso`)"
+      - "traefik.http.routers.quiz-api-nso.entrypoints=websecure"
+      - "traefik.http.routers.quiz-api-nso.tls=true"
+      - "traefik.http.routers.quiz-api-nso.service=quiz-api"
+      - "traefik.http.routers.quiz-api-nso.middlewares=quiz-strip-basepath"
       # ── Service ──────────────────────────────────────────────────────────────
       - "traefik.http.services.quiz-api.loadbalancer.server.port=4000"
 
