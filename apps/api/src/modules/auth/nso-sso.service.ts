@@ -1,6 +1,5 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
 import * as crypto from 'crypto';
 
 export interface NsoUserinfo {
@@ -61,11 +60,13 @@ export class NsoSsoService {
       client_secret: this.clientSecret,
     });
 
-    const { data } = await axios.post(
-      `${this.baseUrl}/public/api/sso/token.php`,
-      body.toString(),
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
-    );
+    const res = await fetch(`${this.baseUrl}/public/api/sso/token.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    });
+
+    const data = await res.json() as Record<string, unknown>;
 
     if (!data.access_token) {
       this.logger.error('NSO SSO token response missing access_token', data);
@@ -76,22 +77,21 @@ export class NsoSsoService {
 
   /** Fetch userinfo using the SSO access_token */
   async getUserinfo(accessToken: string): Promise<NsoUserinfo> {
-    const { data } = await axios.get(`${this.baseUrl}/public/api/sso/userinfo.php`, {
+    const res = await fetch(`${this.baseUrl}/public/api/sso/userinfo.php`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    return data as NsoUserinfo;
+    return res.json() as Promise<NsoUserinfo>;
   }
 
   /** Revoke the SSO session (best-effort, call on logout) */
   async logout(accessToken: string): Promise<void> {
     try {
-      await axios.post(
-        `${this.baseUrl}/public/api/auth/logout.php`,
-        null,
-        { headers: { Authorization: `Bearer ${accessToken}` } },
-      );
+      await fetch(`${this.baseUrl}/public/api/auth/logout.php`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
     } catch (err) {
-      this.logger.warn('NSO SSO logout failed (non-fatal)', err?.message);
+      this.logger.warn('NSO SSO logout failed (non-fatal)', (err as Error)?.message);
     }
   }
 
