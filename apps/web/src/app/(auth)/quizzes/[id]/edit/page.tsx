@@ -160,7 +160,7 @@ export default function EditQuizPage() {
       const q = data!.questions[selectedIdx!];
       return quizApi.updateQuestion(q.id, payload);
     },
-    onSuccess: (res) => {
+    onSuccess: () => {
       toast.success(isNew ? 'เพิ่มคำถามแล้ว' : 'บันทึกแล้ว');
       setIsDirty(false);
       queryClient.invalidateQueries({ queryKey: ['quiz', id] });
@@ -175,11 +175,27 @@ export default function EditQuizPage() {
           });
       }
     },
-    onError: () => toast.error('ไม่สามารถบันทึกได้'),
+    onError: (err: any) => {
+      // Extract and display the actual error reason from API
+      const msg =
+        err?.response?.data?.message ??
+        err?.response?.data?.error ??
+        err?.message ??
+        'ไม่สามารถบันทึกได้';
+      const status = err?.response?.status;
+      const detail = Array.isArray(msg) ? msg.join(', ') : msg;
+      toast.error(`บันทึกไม่ได้${status ? ` (${status})` : ''}: ${detail}`, { duration: 6000 });
+      console.error('[save error]', err?.response?.data ?? err);
+    },
   });
 
   const saveAndFinish = async () => {
-    try { await saveMutation.mutateAsync(); router.push('/quizzes'); } catch {}
+    try {
+      await saveMutation.mutateAsync();
+      router.push('/quizzes');
+    } catch {
+      // onError already shows toast — do NOT redirect on failure
+    }
   };
 
   const deleteMutation = useMutation({
@@ -189,7 +205,10 @@ export default function EditQuizPage() {
       queryClient.invalidateQueries({ queryKey: ['quiz', id] });
       setSelectedIdx(null); setIsNew(false); setIsDirty(false);
     },
-    onError: () => toast.error('ไม่สามารถลบได้'),
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message ?? err?.message ?? 'ไม่สามารถลบได้';
+      toast.error(Array.isArray(msg) ? msg.join(', ') : msg, { duration: 5000 });
+    },
   });
 
   /* ── Loading state ────────────────────────────────────────── */
@@ -250,10 +269,13 @@ export default function EditQuizPage() {
           </button>
           <button
             onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending || !isDirty}
+            disabled={saveMutation.isPending || (!selectedQ && !isNew)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-nso-primary text-nso-primary text-xs font-semibold hover:bg-nso-primary/5 disabled:opacity-40 transition-colors"
           >
-            <Save className="w-3.5 h-3.5" /> บันทึก
+            {saveMutation.isPending
+              ? <span className="w-3.5 h-3.5 border-2 border-nso-primary border-t-transparent rounded-full animate-spin" />
+              : <Save className="w-3.5 h-3.5" />}
+            บันทึก
           </button>
           <button
             onClick={saveAndFinish}
