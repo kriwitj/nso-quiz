@@ -78,20 +78,25 @@ export default function EditQuizPage() {
     staleTime: 0,
   });
 
-  // Select first question on initial load
+  // Re-sync selected question after data refresh (after save/delete)
   useEffect(() => {
-    if (data?.questions.length && selectedIdx === null && !isNew) {
+    if (!data) return;
+    if (selectedIdx !== null) {
+      const q = data.questions[selectedIdx];
+      if (q && !isDirty) {
+        setForm(fromQuestion(q));
+      } else if (!q) {
+        // selectedIdx is out of bounds (e.g. after delete) — reset
+        const fallback = data.questions.length > 0 ? 0 : null;
+        setSelectedIdx(fallback);
+        if (fallback !== null) setForm(fromQuestion(data.questions[fallback]));
+        setIsDirty(false);
+      }
+    } else if (!isNew && data.questions.length > 0) {
+      // No selection yet — auto-select first question
       setSelectedIdx(0);
       setForm(fromQuestion(data.questions[0]));
       setIsDirty(false);
-    }
-  }, [data, selectedIdx, isNew]);
-
-  // Re-sync selected question after save (data refresh)
-  useEffect(() => {
-    if (data && selectedIdx !== null && !isDirty) {
-      const q = data.questions[selectedIdx];
-      if (q) setForm(fromQuestion(q));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
@@ -157,7 +162,9 @@ export default function EditQuizPage() {
         choices: form.choices.map(c => ({ text: c.text, isCorrect: c.isCorrect })),
       };
       if (isNew) return quizApi.addQuestion(id, payload);
-      const q = data!.questions[selectedIdx!];
+      if (selectedIdx === null) throw new Error('ยังไม่ได้เลือกคำถาม (selectedIdx=null)');
+      const q = data?.questions[selectedIdx];
+      if (!q) throw new Error(`ไม่พบคำถามที่ตำแหน่ง ${selectedIdx} (มีทั้งหมด ${data?.questions.length ?? 0} ข้อ)`);
       return quizApi.updateQuestion(q.id, payload);
     },
     onSuccess: () => {
