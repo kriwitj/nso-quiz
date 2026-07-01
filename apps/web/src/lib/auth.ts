@@ -46,6 +46,34 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
+    // Used by the NSO SSO callback page after NestJS completes the OAuth2 flow
+    CredentialsProvider({
+      id: 'nso-token',
+      name: 'NSO SSO Token',
+      credentials: {
+        token: { label: 'Access Token', type: 'text' },
+        refresh: { label: 'Refresh Token', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.token) return null;
+        try {
+          const { data } = await axios.get(`${API_URL}/auth/me`, {
+            headers: { Authorization: `Bearer ${credentials.token}` },
+          });
+          return {
+            id: data.id,
+            email: data.email,
+            name: data.name,
+            image: data.avatar ?? null,
+            role: data.role,
+            accessToken: credentials.token,
+            refreshToken: credentials.refresh ?? '',
+          };
+        } catch {
+          return null;
+        }
+      },
+    }),
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {

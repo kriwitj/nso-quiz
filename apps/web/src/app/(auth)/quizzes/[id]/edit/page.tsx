@@ -302,7 +302,72 @@ export default function EditQuizPage() {
       {/* ── 3-column body ── */}
       <div className="flex-1 flex overflow-hidden min-h-0">
 
-        {/* LEFT: Question data */}
+        {/* LEFT: Question list */}
+        <div className="w-[250px] flex-none border-r border-gray-200 overflow-y-auto bg-white">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest">รายการคำถาม</h2>
+              <span className="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-0.5 rounded-full">{total} ข้อ</span>
+            </div>
+
+            <div className="space-y-1.5">
+              {data.questions.map((q, idx) => {
+                const cfg = TYPE_CONFIG[q.type];
+                const isSelected = !isNew && selectedIdx === idx;
+                return (
+                  <button
+                    key={q.id}
+                    onClick={() => tryNav(idx)}
+                    className={cn(
+                      'w-full text-left p-3 rounded-xl border-2 transition-all',
+                      isSelected ? 'border-emerald-400 bg-emerald-50' : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50',
+                    )}
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className={cn(
+                        'w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5',
+                        isSelected ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500',
+                      )}>
+                        {idx + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground truncate">{q.text || '(ไม่มีข้อความ)'}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {cfg?.label ?? q.type} · {q.timeLimit}s · {q.points.toLocaleString()} คะแนน
+                        </p>
+                      </div>
+                      {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />}
+                    </div>
+                  </button>
+                );
+              })}
+
+              {/* New question (being edited) */}
+              {isNew && (
+                <div className="w-full text-left p-3 rounded-xl border-2 border-dashed border-nso-primary bg-nso-primary/5">
+                  <div className="flex items-start gap-2">
+                    <span className="w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 bg-nso-primary text-white">
+                      {total + 1}
+                    </span>
+                    <p className="text-xs font-semibold text-nso-primary">คำถามใหม่</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => tryNav('new')}
+              className="mt-3 w-full py-2.5 rounded-xl border-2 border-dashed border-gray-300 text-xs text-gray-500 hover:border-nso-primary hover:text-nso-primary transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" /> เพิ่มคำถามใหม่
+            </button>
+          </div>
+        </div>
+
+        {/* MIDDLE + RIGHT: Question data and choices (blur overlay when no question selected) */}
+        <div className="relative flex-1 flex overflow-hidden min-h-0">
+
+        {/* MIDDLE: Question data */}
         <div className="w-[340px] flex-none border-r border-gray-200 overflow-y-auto bg-white">
           <div className="p-5 space-y-5">
             <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest">ข้อมูลคำถาม</h2>
@@ -475,66 +540,24 @@ export default function EditQuizPage() {
           </div>
         </div>
 
-        {/* RIGHT: Question list */}
-        <div className="w-[250px] flex-none border-l border-gray-200 overflow-y-auto bg-white">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest">รายการคำถาม</h2>
-              <span className="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-0.5 rounded-full">{total} ข้อ</span>
-            </div>
-
-            <div className="space-y-1.5">
-              {data.questions.map((q, idx) => {
-                const cfg = TYPE_CONFIG[q.type];
-                const isSelected = !isNew && selectedIdx === idx;
-                return (
-                  <button
-                    key={q.id}
-                    onClick={() => tryNav(idx)}
-                    className={cn(
-                      'w-full text-left p-3 rounded-xl border-2 transition-all',
-                      isSelected ? 'border-emerald-400 bg-emerald-50' : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50',
-                    )}
-                  >
-                    <div className="flex items-start gap-2">
-                      <span className={cn(
-                        'w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5',
-                        isSelected ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500',
-                      )}>
-                        {idx + 1}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-foreground truncate">{q.text || '(ไม่มีข้อความ)'}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          {cfg?.label ?? q.type} · {q.timeLimit}s · {q.points.toLocaleString()} คะแนน
-                        </p>
-                      </div>
-                      {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />}
-                    </div>
-                  </button>
-                );
-              })}
-
-              {/* New question (being edited) */}
-              {isNew && (
-                <div className="w-full text-left p-3 rounded-xl border-2 border-dashed border-nso-primary bg-nso-primary/5">
-                  <div className="flex items-start gap-2">
-                    <span className="w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 bg-nso-primary text-white">
-                      {total + 1}
-                    </span>
-                    <p className="text-xs font-semibold text-nso-primary">คำถามใหม่</p>
-                  </div>
+          {/* Blur overlay — shown when no question is selected */}
+          {selectedIdx === null && !isNew && (
+            <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/60 flex flex-col items-center justify-center pointer-events-auto">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8 text-center max-w-xs">
+                <div className="w-12 h-12 rounded-2xl bg-nso-primary-fixed/30 flex items-center justify-center mx-auto mb-4">
+                  <Plus className="w-6 h-6 text-nso-primary" />
                 </div>
-              )}
+                <p className="font-bold text-base text-foreground mb-1">ยังไม่ได้เลือกคำถาม</p>
+                <p className="text-sm text-muted-foreground mb-4">เลือกคำถามจากรายการทางซ้าย หรือเพิ่มคำถามใหม่เพื่อเริ่มแก้ไข</p>
+                <button
+                  onClick={() => tryNav('new')}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-nso-primary text-white text-sm font-semibold hover:bg-nso-primary-container transition-colors mx-auto"
+                >
+                  <Plus className="w-4 h-4" /> เพิ่มคำถามใหม่
+                </button>
+              </div>
             </div>
-
-            <button
-              onClick={() => tryNav('new')}
-              className="mt-3 w-full py-2.5 rounded-xl border-2 border-dashed border-gray-300 text-xs text-gray-500 hover:border-nso-primary hover:text-nso-primary transition-colors flex items-center justify-center gap-1.5"
-            >
-              <Plus className="w-3.5 h-3.5" /> เพิ่มคำถามใหม่
-            </button>
-          </div>
+          )}
         </div>
       </div>
 

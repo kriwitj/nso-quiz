@@ -10,8 +10,9 @@ import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
-import { User } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import { NsoUserinfo } from './nso-sso.service';
 
 @Injectable()
 export class AuthService {
@@ -120,6 +121,72 @@ export class AuthService {
     ]);
 
     return { accessToken, refreshToken };
+  }
+
+  async validateNsoSsoUser(userinfo: NsoUserinfo): Promise<User> {
+    const perms = userinfo.permissions ?? [];
+
+    // Map NSO SSO permissions → app role
+    const role: UserRole =
+      perms.includes('admin') || perms.includes('quiz_admin')
+        ? UserRole.ADMIN
+        : UserRole.HOST;
+
+    const orgFields = {
+      nsoUsername: userinfo.preferred_username ?? null,
+      nsoBranch: userinfo.branch ?? null,
+      nsoDepartment: userinfo.department ?? null,
+      nsoProvinceCode: userinfo.province_code ?? null,
+      nsoPermissions: perms,
+    };
+
+    // 1. Look up by nsoSsoId (sub UUID)
+    let user = await this.prisma.user.findUnique({ where: { nsoSsoId: userinfo.sub } });
+
+    // 2. Not found → try linking by email
+    if (!user && userinfo.email) {
+      user = await this.prisma.user.findUnique({ where: { email: userinfo.email } });
+      if (user) {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: {
+            nsoSsoId: userinfo.sub,
+            avatar: userinfo.picture ?? user.avatar,
+            // Respect manually elevated ADMIN; otherwise sync role from SSO
+            role: user.role === UserRole.ADMIN ? UserRole.ADMIN : role,
+            lastLoginAt: new Date(),
+            ...orgFields,
+          },
+        });
+      }
+    }
+
+    // 3. Truly new user — create
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email: userinfo.email ?? `${userinfo.sub}@nso-sso.local`,
+          name:
+            userinfo.display_name ??
+            userinfo.name ??
+            userinfo.preferred_username ??
+            'NSO User',
+          nsoSsoId: userinfo.sub,
+          avatar: userinfo.picture ?? null,
+          role,
+          lastLoginAt: new Date(),
+          ...orgFields,
+        },
+      });
+    } else if (user.nsoSsoId) {
+      // Already linked — refresh permissions + org info every login
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: { lastLoginAt: new Date(), ...orgFields },
+      });
+    }
+
+    return user;
   }
 
   sanitizeUser(user: User) {

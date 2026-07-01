@@ -30,23 +30,30 @@ enum SessionStatus {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String
-  password      String?
-  googleId      String?   @unique
-  avatar        String?
-  role          UserRole  @default(HOST)
-  isActive      Boolean   @default(true)
-  lastLoginAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  email            String    @unique
+  name             String
+  password         String?
+  googleId         String?   @unique
+  nsoSsoId         String?   @unique   // NSO SSO sub (UUID)
+  nsoUsername      String?             // preferred_username (e.g. kriwit.j)
+  nsoBranch        String?             // กอง / ศูนย์
+  nsoDepartment    String?             // กลุ่ม / ฝ่าย
+  nsoProvinceCode  String?             // รหัสจังหวัด (null = ส่วนกลาง)
+  nsoPermissions   String[]            // permissions[] ที่รับจาก SSO ทุก login
+  avatar           String?
+  role             UserRole  @default(HOST)
+  isActive         Boolean   @default(true)
+  lastLoginAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  quizzes       Quiz[]
-  sessions      GameSession[]
+  quizzes          Quiz[]
+  sessions         GameSession[]
 
   @@index([email])
   @@index([googleId])
+  @@index([nsoSsoId])
   @@map("users")
 }
 
