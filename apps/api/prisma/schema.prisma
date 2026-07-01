@@ -132,6 +132,21 @@ model GameSession {
   @@map("game_sessions")
 }
 
+model ActivityLog {
+  id              String   @id @default(cuid())
+  action          String   // ROLE_CHANGED | STATUS_TOGGLED | USER_CREATED | USER_DELETED
+  targetUserId    String?
+  targetUserName  String?
+  targetUserEmail String?
+  adminId         String?
+  adminName       String?
+  details         Json?
+  createdAt       DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
 model PlayerSession {
   id            String    @id @default(cuid())
   sessionId     String

@@ -95,8 +95,9 @@ export const uploadApi = {
 // Admin API
 export const adminApi = {
   users: (page = 1, search?: string) =>
-    api.get(`/admin/users?page=${page}${search ? `&search=${search}` : ''}`),
+    api.get(`/admin/users?page=${page}${search ? `&search=${encodeURIComponent(search)}` : ''}`),
   updateRole: (id: string, role: string) => api.patch(`/admin/users/${id}/role`, { role }),
   toggleStatus: (id: string) => api.patch(`/admin/users/${id}/toggle-status`),
   metrics: () => api.get('/admin/metrics'),
+  logs: (page = 1) => api.get(`/admin/logs?page=${page}`),
 };
