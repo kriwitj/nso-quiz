@@ -1,16 +1,9 @@
 'use client';
-export const dynamic = 'force-dynamic';
-
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 
-/**
- * Landing page after NestJS completes NSO SSO OAuth2 flow.
- * NestJS redirects here with: /auth/sso-callback?token=...&refresh=...
- * We sign in via the 'nso-token' NextAuth credentials provider, then redirect to dashboard.
- */
-export default function SsoCallbackPage() {
+function SsoCallbackInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -32,10 +25,20 @@ export default function SsoCallbackPage() {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  return null;
+}
+
+const Spinner = (
+  <div className="min-h-screen flex flex-col items-center justify-center bg-nso-surface gap-4">
+    <div className="w-12 h-12 border-4 border-nso-primary border-t-transparent rounded-full animate-spin" />
+    <p className="text-muted-foreground text-sm font-medium">กำลังเข้าสู่ระบบด้วย NSO Account…</p>
+  </div>
+);
+
+export default function SsoCallbackPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-nso-surface gap-4">
-      <div className="w-12 h-12 border-4 border-nso-primary border-t-transparent rounded-full animate-spin" />
-      <p className="text-muted-foreground text-sm font-medium">กำลังเข้าสู่ระบบด้วย NSO Account…</p>
-    </div>
+    <Suspense fallback={Spinner}>
+      <SsoCallbackInner />
+    </Suspense>
   );
 }
