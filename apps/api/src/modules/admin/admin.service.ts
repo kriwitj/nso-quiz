@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserRole } from '@prisma/client';
+import { UserRole, Prisma } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
@@ -119,7 +119,7 @@ export class AdminService {
         targetUserEmail: target.email,
         adminId,
         adminName,
-        details,
+        details: details as Prisma.InputJsonValue,
       },
     });
   }
