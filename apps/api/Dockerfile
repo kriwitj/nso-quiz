@@ -2,6 +2,8 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
+ENV PRISMA_ENGINES_MIRROR=https://registry.npmmirror.com/-/binary/prisma
+
 # Copy root workspace manifests first (for better layer caching)
 COPY package.json package-lock.json ./
 
@@ -18,6 +20,8 @@ RUN npm ci --ignore-scripts
 # ── Stage 2: Build ────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 WORKDIR /app
+
+ENV PRISMA_ENGINES_MIRROR=https://registry.npmmirror.com/-/binary/prisma
 
 # Bring hoisted node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
