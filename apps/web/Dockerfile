@@ -36,8 +36,8 @@ ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Run build from root to enable proper dependency tracing in monorepo standalone output
-RUN mkdir -p apps/web/public
 RUN --mount=type=cache,target=/app/apps/web/.next/cache \
+    mkdir -p apps/web/public && \
     npm run build -w web
 
 # ── Stage 3: Lean production image ───────────────────────────────────────────

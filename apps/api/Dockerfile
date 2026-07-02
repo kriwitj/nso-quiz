@@ -29,10 +29,10 @@ COPY package.json turbo.json ./
 
 # Generate Prisma client, build shared package, then build NestJS
 WORKDIR /app
-RUN npm run build -w packages/shared
-WORKDIR /app/apps/api
-RUN npx prisma generate
-RUN npm run build
+RUN npm run build -w packages/shared && \
+    cd apps/api && \
+    npx prisma generate && \
+    npm run build
 
 # ── Stage 3: Lean production image ───────────────────────────────────────────
 FROM node:20-alpine AS runner
