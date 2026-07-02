@@ -85,6 +85,7 @@ services:
     build:
       context: .   # monorepo root — Dockerfile needs package-lock.json + packages/shared
       dockerfile: ./apps/api/Dockerfile
+      network: host
     container_name: quiz_api
     restart: unless-stopped
     depends_on:
@@ -165,6 +166,7 @@ services:
     build:
       context: .   # monorepo root — Dockerfile needs package-lock.json + packages/shared
       dockerfile: ./apps/web/Dockerfile
+      network: host
       args:
         # NEXT_PUBLIC_* and BASE_PATH are baked into the JS bundle at build time
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://province-stat.nso.go.th/nso-quiz/api}
